@@ -11,21 +11,51 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import environ
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# initialise environ
+env = environ.Env()
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
+# Check if running in Kubernetes
+RUNNING_IN_KUBERNETES = os.getenv("KUBERNETES_SERVICE_HOST") is not None
+# If running in Kubernetes, read the config from mounted volume
+if RUNNING_IN_KUBERNETES:
+    # This is where your config map is mounted
+    config_dir = Path('/code/config')
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-etht@cxy)sx$+3#p4ll%x12*w=6w+vcn+o8q5@rs^4l+@)yf@+'
+    # Read the values from the config files in the mounted directory
+    DEBUG = open(config_dir / 'DEBUG').read().strip() == 'True'
+    ALLOWED_HOSTS = open(
+        config_dir / 'DJANGO_ALLOWED_HOSTS').read().strip().split(",")
+    CSRF_TRUSTED_ORIGINS = open(
+        config_dir / 'CSRF_TRUSTED_ORIGINS').read().strip().split(",")
+    SECRET_KEY = open(config_dir / 'SECRET_KEY').read().strip()
+    SQL_ENGINE = open(config_dir / 'SQL_ENGINE').read().strip()
+    SQL_DATABASE = open(config_dir / 'SQL_DATABASE').read().strip()
+    SQL_USER = open(config_dir / 'SQL_USER').read().strip()
+    SQL_HOST = open(config_dir / 'SQL_HOST').read().strip()
+    SQL_PORT = open(config_dir / 'SQL_PORT').read().strip()
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+    # read the values in the secret passed as an env variables
+    PASSWORD = os.getenv('SQL_PASSWORD')
+else:
+    # if in development, Load environment variables from the local .env file
+    env_file_path = Path(__file__).resolve().parent.parent / '.env'
+    env.read_env(env_file_path)
 
-ALLOWED_HOSTS = []
+    DEBUG = env('DEBUG', default=False)
+    ALLOWED_HOSTS = env('DJANGO_ALLOWED_HOSTS', default=['127.0.0.1'])
+    SECRET_KEY = env('SECRET_KEY')
+    SQL_ENGINE = env('SQL_ENGINE', default='django.db.backends.postgresql')
+    SQL_DATABASE = str(env('SQL_DATABASE', default=BASE_DIR / 'db.sqlite3'))
+    SQL_USER = env('SQL_USER', default='')
+    SQL_HOST = env('SQL_HOST', default='')
+    PASSWORD = env('SQL_PASSWORD', default='')
+    SQL_PORT = env('SQL_PORT', default='5432')
 
 
 # Application definition
@@ -77,12 +107,12 @@ WSGI_APPLICATION = 'track_locator.wsgi.application'
 
 DATABASES = {
     'default': {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": "mydatabase",
-        "USER": "mydatabaseuser",
-        "PASSWORD": "mypassword",
-        "HOST": "127.0.0.1",
-        "PORT": "5432",
+        'ENGINE': SQL_ENGINE,
+        'NAME': SQL_DATABASE,
+        'USER': SQL_USER,
+        'PASSWORD': PASSWORD,
+        'HOST': SQL_HOST,
+        'PORT': SQL_PORT,
     }
 }
 
@@ -104,15 +134,6 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
-
-# Django rest framework
-REST_FRAMEWORK = {
-    # Use Django's standard `django.contrib.auth` permissions,
-    # or allow read-only access for unauthenticated users.
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
-    ]
-}
 
 
 # Internationalization
