@@ -5,6 +5,7 @@ from django.conf import settings
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from rest_framework.authtoken.models import Token
+from django.utils import timezone
 
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
@@ -118,3 +119,14 @@ class LocAppGroups(models.Model):
     # Methods
     def __str__(self):
         return f'{self.LocAppGrp_name}'
+
+
+class QRLoginSession(models.Model):
+    session_token = models.CharField(max_length=100, unique=True)
+    created_at = models.DateTimeField(default=timezone.now)
+    user = models.ForeignKey('LocAppUser', null=True,
+                             blank=True, on_delete=models.CASCADE)
+    is_authenticated = models.BooleanField(default=False)
+
+    def is_expired(self):
+        return (timezone.now() - self.created_at).total_seconds() > 120  # 2 minutes
