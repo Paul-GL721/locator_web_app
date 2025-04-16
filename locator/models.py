@@ -1,10 +1,19 @@
 from django.db import models
 from django.contrib.auth.models import BaseUserManager, AbstractUser
 from django.urls import reverse
+from django.conf import settings
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from rest_framework.authtoken.models import Token
+
+
+@receiver(post_save, sender=settings.AUTH_USER_MODEL)
+def create_auth_token(sender, instance=None, created=False, **kwargs):
+    if created:
+        Token.objects.create(user=instance)
+
 
 # manager for the custom employee abstract model
-
-
 class LocAppUserManager(BaseUserManager):
     def create_user(self, telephone_Number, password=None,):
         """
@@ -34,10 +43,8 @@ class LocAppUserManager(BaseUserManager):
         superuser.save(using=self._db)
         return superuser
 
-# Inherits from the default user model
 
-
-class LocAppUser(AbstractUser):
+class LocAppUser(AbstractUser):  # Inherits from the default user model
     locuser_id = models.AutoField(primary_key=True)
     telephone_Number = models.CharField(
         max_length=200, unique=True, help_text='Contact Number of the employee')
@@ -100,7 +107,7 @@ class LocAppGroups(models.Model):
         'LocAppUser', related_name='locigroup')
     LocAppGrp_description = models.TextField(
         blank=True, null=True, max_length=150, help_text='Decribe your company')
-    server_Caputured_on = models.DateTimeField(
+    server_Captured_on = models.DateTimeField(
         blank=False, auto_now_add=True, help_text='Date and time data was input in the server')
     Last_modified = models.DateTimeField(blank=True, auto_now=True)
 
