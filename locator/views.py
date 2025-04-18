@@ -13,11 +13,47 @@ from django.contrib.auth import login
 from django.utils.http import urlencode
 import time
 from django.views import View
+from django.views.generic.base import TemplateView
 from django.shortcuts import redirect
 from django.http import HttpResponse
+from django.conf import settings
 import io
 import qrcode
 import secrets
+import base64
+from urllib.parse import urlencode
+
+
+class index_page(TemplateView):
+    """
+    Display the indexpage/ landing page, with a QRcode that will allow the user 
+    to login from their mobile application 
+    """
+    template_name = "indexpage.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        # Prepare placeholder query parameters
+        query_params = urlencode({
+            'uid': '{uid}',
+            'username': '{username}',
+            'token': '{token}',
+        })
+
+        # Construct shell login URL
+        login_url = f"{settings.APP_DOMAIN}/qr-login/?{query_params}"
+
+        # Generate QR code
+        qr = qrcode.make(login_url)
+        buffer = io.BytesIO()
+        qr.save(buffer, format="PNG")
+        img_base64 = base64.b64encode(buffer.getvalue()).decode()
+        qr_image_data = f"data:image/png;base64,{img_base64}"
+
+        # Add QR code to template context
+        context["qr_image"] = qr_image_data
+        return context
 
 
 class mobile_add_newgpsdata(APIView):

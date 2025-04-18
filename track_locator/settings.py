@@ -39,6 +39,7 @@ if RUNNING_IN_KUBERNETES:
     SQL_USER = open(config_dir / 'SQL_USER').read().strip()
     SQL_HOST = open(config_dir / 'SQL_HOST').read().strip()
     SQL_PORT = open(config_dir / 'SQL_PORT').read().strip()
+    APP_DOMAIN = open(config_dir / 'APP_DOMAIN').read().strip()
 
     # read the values in the secret passed as an env variables
     PASSWORD = os.getenv('SQL_PASSWORD')
@@ -48,7 +49,7 @@ else:
     env.read_env(env_file_path)
 
     DEBUG = env('DEBUG', default=False)
-    ALLOWED_HOSTS = env('DJANGO_ALLOWED_HOSTS', default=['127.0.0.1'])
+    ALLOWED_HOSTS = env('DJANGO_ALLOWED_HOSTS', default=['*'])
     SECRET_KEY = env('SECRET_KEY')
     SQL_ENGINE = env('SQL_ENGINE', default='django.db.backends.postgresql')
     SQL_DATABASE = str(env('SQL_DATABASE', default=BASE_DIR / 'db.sqlite3'))
@@ -56,6 +57,9 @@ else:
     SQL_HOST = env('SQL_HOST', default='')
     PASSWORD = env('SQL_PASSWORD', default='')
     SQL_PORT = env('SQL_PORT', default='5432')
+    APP_DOMAIN = env('APP_DOMAIN', default='http://localhost:8000')
+
+    print(ALLOWED_HOSTS)
 
 
 # Application definition
@@ -69,7 +73,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework.authtoken',
     'rest_framework',
-    'locator.apps.LocatorConfig'
+    'locator.apps.LocatorConfig',
 ]
 
 MIDDLEWARE = [
@@ -152,6 +156,11 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
+STATICFILES_DIRS = [
+    BASE_DIR / 'static',  # Global shared static files directory (optional)
+]
+# Directory where collected static files will be stored
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -162,4 +171,4 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = "locator.LocAppUser"
 
 # Redirect to home URL after login
-LOGIN_REDIRECT_URL = 'after_login'
+# LOGIN_REDIRECT_URL = 'after_login'

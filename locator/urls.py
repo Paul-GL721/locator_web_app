@@ -3,7 +3,7 @@ from .views import *
 
 urlpatterns = [
     # web urls
-    # path(" ", index_page.as_view(), name="index_page"),
+    path('', index_page.as_view(), name="index_page"),
     # path("afterlogin/", after_login.as_view(), name="after_login"),
     path("generate-qr/", GenerateQRCodeView.as_view(), name="generate_qr"),
     path("open-app/", OpenAppRedirectView.as_view(), name="open_app_redirect"),
@@ -13,9 +13,11 @@ urlpatterns = [
     path("api/qr-login-authenticate/",
          QRLoginAuthenticateView.as_view(), name="qr_authenticate"),
 
+
     # mobile urls
     path('mobile/newgpsdata/', mobile_add_newgpsdata.as_view(),
          name='add_newgpsdata'),
+
 
     # mobile authentication
     path('api-token-auth/', CustomAuthToken.as_view(), name='api_token_auth'),
