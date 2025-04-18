@@ -19,11 +19,9 @@ from django.urls import path
 from django.urls import include
 from django.conf import settings
 from django.conf.urls.static import static
-from django.views.generic import RedirectView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('authentication/', include('django.contrib.auth.urls')),
-    path('locator/', include('locator.urls')),
-    path('', RedirectView.as_view(url='locator/', permanent=True)),
+    path('', include('locator.urls')),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

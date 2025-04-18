@@ -48,8 +48,8 @@ else:
     env_file_path = Path(__file__).resolve().parent.parent / '.env'
     env.read_env(env_file_path)
 
-    DEBUG = env('DEBUG', default=False)
-    ALLOWED_HOSTS = env('DJANGO_ALLOWED_HOSTS', default=['*'])
+    DEBUG = env('DEBUG', default='False')
+    ALLOWED_HOSTS = env('DJANGO_ALLOWED_HOSTS', default=['127.0.0.1'])
     SECRET_KEY = env('SECRET_KEY')
     SQL_ENGINE = env('SQL_ENGINE', default='django.db.backends.postgresql')
     SQL_DATABASE = str(env('SQL_DATABASE', default=BASE_DIR / 'db.sqlite3'))
@@ -58,8 +58,6 @@ else:
     PASSWORD = env('SQL_PASSWORD', default='')
     SQL_PORT = env('SQL_PORT', default='5432')
     APP_DOMAIN = env('APP_DOMAIN', default='http://localhost:8000')
-
-    print(ALLOWED_HOSTS)
 
 
 # Application definition
@@ -91,7 +89,9 @@ ROOT_URLCONF = 'track_locator.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [
+            BASE_DIR / "templates",  # Global templates directory
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
