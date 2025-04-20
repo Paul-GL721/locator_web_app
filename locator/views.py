@@ -56,6 +56,20 @@ class index_page(TemplateView):
         return context
 
 
+class after_login(TemplateView):
+    """
+    After login display this template
+    """
+    template_name = "after_login.html"
+
+
+class add_user(TemplateView):
+    """
+    Allow an existing user to add a user to the same group
+    """
+    template_name = "add_user.html"
+
+
 class mobile_add_newgpsdata(APIView):
     """
     An api to add gps position data from mobile device local storage to the

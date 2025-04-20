@@ -52,7 +52,7 @@ class LocAppUser(AbstractUser):  # Inherits from the default user model
     Last_modified = models.DateTimeField(blank=True, null=True, auto_now=True)
 
     objects = LocAppUserManager()
-    USERNAME_FIELD = "telephone_Number"
+    REQUIRED_FIELDS = ['telephone_Number']
 
     def __str__(self):
         return f'{self.first_name}, {self.last_name}'
@@ -66,6 +66,8 @@ class LocAppPositions(models.Model):
         help_text='Date the position was captured')
     LocAppPos_user = models.ForeignKey(
         'LocAppUser', on_delete=models.CASCADE, related_name='lociposition')
+    LocAppPos_user_group = models.ForeignKey(
+        'LocAppGroups', on_delete=models.CASCADE, related_name='locgruposition')
     LocAppPos_timestamp = models.TimeField(
         help_text='Time the reading was taken in HH:MM:SS')
     LocAppPos_latitude = models.FloatField(
@@ -104,6 +106,8 @@ class LocAppGroups(models.Model):
         blank=False, max_length=200, help_text='Enter Group name')
     LocAppGrp_address = models.TextField(
         blank=True, null=True, max_length=60, help_text='Enter Group address')
+    LocAppGrp_random_id = models.TextField(
+        blank=True, max_length=60, help_text='Random id to identify a group')
     LocAppGrp_user = models.ManyToManyField(
         'LocAppUser', related_name='locigroup')
     LocAppGrp_description = models.TextField(
