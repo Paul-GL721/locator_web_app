@@ -22,6 +22,8 @@ import qrcode
 import secrets
 import base64
 from urllib.parse import urlencode
+from django.contrib.auth.hashers import make_password
+from django.utils.crypto import get_random_string
 
 
 class index_page(TemplateView):
@@ -68,6 +70,81 @@ class add_user(TemplateView):
     Allow an existing user to add a user to the same group
     """
     template_name = "add_user.html"
+
+
+class CreateUserProfile(View):
+    """
+    Here we a create a profile for a new user
+    """
+
+    def post(self, request):
+        data = request.POST
+        # 1.get user data from the form
+        first_name = data.get('first_name')
+        last_name = data.get('last_name')
+        phone = data.get('telephone')
+        group_status = data.get('group_status')
+        group_code = data.get('group_code')
+        # generated variables
+        gen_username = first_name
+        user_password = make_password(phone)
+
+        # generate a unique code for each group
+        def generate_unique_group_code(length=6):
+            while True:
+                code = get_random_string(length).upper()
+                if not LocAppGroups.objects.filter(LocAppGrp_code=code).exists():
+                    return code
+
+        # 2. create the user
+        user = LocAppUser.objects.create(
+            first_name=first_name,
+            last_name=last_name,
+            telephone_Number=phone,
+            username=gen_username,
+            password=user_password,
+        )
+
+        # 3. Add a user to a group
+        if group_status == "one":
+            group_name = f"{first_name}'s Group"
+            group_desc = f"This group was created by {first_name} {last_name}"
+            group_code_generated = generate_unique_group_code()
+            # create user grp
+            user_group = LocAppGroups.objects.create(
+                LocAppGrp_name=group_name,
+                LocAppGrp_description=group_desc,
+                LocAppGrp_code=group_code_generated,
+            )
+            # create user status as admin
+            LocAppGrpStatus.objects.create(
+                LocAppGrp_Fkeyid=user_group,
+                locuser_Fkeyid=user,
+                useradmin=True
+            )
+        elif group_status == "two":
+            try:
+                user_group = LocAppGroups.objects.get(
+                    LocAppGrp_code=group_code)
+                # create user WITHOUT admin status
+                LocAppGrpStatus.objects.create(
+                    LocAppGrp_Fkeyid=user_group,
+                    locuser_Fkeyid=user,
+                    useradmin=False
+                )
+            except LocAppGroups.DoesNotExist:
+                return JsonResponse({"error": "Group doesnot exist"}, status=404)
+
+        # 4. generate token
+        token, _ = Token.objects.get_or_create(user=user)
+        # return user variables to user
+        return JsonResponse({
+            "token": token.key,
+            "userid": user.locuser_id,
+            "username": user.username,
+            "groupname": user_group.LocAppGrp_name if user_group else None,
+            "groupcode": user_group.LocAppGrp_code if user_group else None,
+        })
 
 
 class mobile_add_newgpsdata(APIView):

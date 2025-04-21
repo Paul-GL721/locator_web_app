@@ -110,6 +110,8 @@ class LocAppGroups(models.Model):
         'LocAppGrp_Fkeyid', 'locuser_Fkeyid'), related_name='locigroup')
     LocAppGrp_description = models.TextField(
         blank=True, null=True, max_length=150, help_text='Decribe your company')
+    LocAppGrp_code = models.CharField(
+        max_length=10, help_text='Code to uniquely indentify group', unique=True, blank=True)
     server_Captured_on = models.DateTimeField(
         blank=False, auto_now_add=True, help_text='Date and time data was input in the server')
     Last_modified = models.DateTimeField(blank=True, auto_now=True)
