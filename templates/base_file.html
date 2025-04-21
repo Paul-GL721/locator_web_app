@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+
+<head>    
+    {% block title %}<title>Base file</title> {% endblock %}
+    {% block head %}
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <!-- Loading static CSS -->
+    {% load static %}
+    <link rel="icon" type="image/png" sizes="973x695" href="{% static 'images/login/login_image.png' %}">
+    <link rel="stylesheet" href="{% static 'css/Bootstrap/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/general_css/Albert%20Sans.css' %}">
+    <link rel="stylesheet" href="{% static 'css/general_css/Lato.css' %}">
+    <link rel="stylesheet" href="{% static 'css/general_css/Noto%20Serif%20Nyiakeng%20Puachue%20Hmong.css' %}">
+    <link rel="stylesheet" href="{% static 'css/general_css/Open%20Sans.css' %}">
+    <link rel="stylesheet" href="{% static 'css/general_css/animate.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/general_css/select2.min.css' %}">
+    <link rel="stylesheet" href="{% static 'images/fonts/fontawesome-all.min.css' %}">
+    <link rel="stylesheet" href="{% static 'images/fonts/font-awesome.min.css' %}">
+    <link rel="stylesheet" href="{% static 'images/fonts/simple-line-icons.min.' %}">
+    <link rel="stylesheet" href="{% static 'images/fonts/fontawesome5-overrides.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/Date_picker/boot4_datepicker.css' %}">
+    <link rel="stylesheet" href="{% static 'css/Bootstrap_Table/bootstrap-table.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/Bootstrap_Table/bootstrap_table_stickyheader_extension.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/sidebar/mscrollbar.css' %}">
+    <link rel="stylesheet" href="{% static 'css/sidebar/sidebar_custom.css' %}">
+    <link rel="stylesheet" href="{% static 'css/sidebar/sidebar_styles.css' %}">
+    <link rel="stylesheet" href="{% static 'css/sidebar/sidebarstyles.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/general_css/Hero-Carousel-images.css' %}">
+    
+
+    
+    {% block extra_css%}  {% endblock %}
+
+    {% endblock %}
+</head>
+
+<body>
+    {% block header %}
+        <header>
+            {% block navigationbar %} {% endblock %}     
+        </header>
+    {% endblock %} 
+    
+
+    {% block content %} <!--Will contain the main block content -->  {% endblock %}
+
+    {% block footer %} 
+        <footer class="bg-light footer">
+            <div class="container">
+                <div class="row">
+                    <div class="col-6 text-center text-lg-start my-auto h-100">
+                        <ul class="list-inline mb-2">
+                            <li class="list-inline-item"><a href="#">About</a></li>
+                            <li class="list-inline-item"><span>⋅</span></li>
+                            <li class="list-inline-item"><a href="#">Contact</a></li>
+                            <li class="list-inline-item"><span>⋅</span></li>
+                            <li class="list-inline-item"><a href="#">Terms of &nbsp;Use</a></li>
+                            <li class="list-inline-item"><span>⋅</span></li>
+                            <li class="list-inline-item"><a href="#">Privacy Policy</a></li>
+                        </ul>
+                        <p class="text-muted small mb-4 mb-lg-0">© Gls Investments 2024. All Rights Reserved.</p>
+                    </div>
+                    <div class="col-6 text-center text-lg-end my-auto h-100">
+                        <ul class="list-inline mb-0">
+                            <li class="list-inline-item"><a href="#"><i class="fa fa-facebook fa-2x fa-fw"></i></a></li>
+                            <li class="list-inline-item"><a href="#"><i class="fa fa-twitter fa-2x fa-fw"></i></a></li>
+                            <li class="list-inline-item"><a href="#"><i class="fa fa-instagram fa-2x fa-fw"></i></a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    {% endblock %}
+
+    <!-- Loading static javascript -->
+    {% load static %}
+    <script src="{% static 'js/jquery.min.js' %}"></script>
+    <script src="{% static 'js/Bootstrap/bootstrap.min.js' %}"></script>
+    <script src="{% static 'js/graphs/chart.min.js' %}"></script>
+    <script src="{% static 'js/Bootstrap_Table/bootstrap-table.min.js' %}"></script>
+    <script src="{% static 'js/Date_Picker/bootstrap_datepicker.js' %}"></script>
+    <script src="{% static 'js/Bootstrap_Table/Bootstrap_Table/bootstrap-table-print-extension.min.js' %}"></script>
+    <script src="{% static 'js/Bootstrap_Table/Bootstrap_Table/bootsrap_table_stickeyheader_extension.min.js' %}"></script>
+    <script src="{% static 'js/Date_Picker/dateformat.js' %}"></script>
+    <script src="{% static 'js/select2.min.js' %}"></script>
+    <script src="{% static 'js/jqformvalidation.min.js' %}"></script>
+    <script src="{% static 'js/chart.min.js' %}"></script>
+    <script src="{% static 'js/bs-init.js' %}"></script>
+    <script src="{% static 'js/sidebar/sidebars.js' %}"></script>
+    <script src="{% static 'js/sidebar/custom_sidebar.js' %}"></script>
+    <script src="{% static 'js/sidebar/jquery.mCustomScrollbar.concat.min.js' %}"></script>
+
+    {% block extra_javascript%}  {% endblock %}
+</body>
+
+</html>

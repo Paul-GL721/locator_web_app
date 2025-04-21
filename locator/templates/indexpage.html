@@ -1,4 +1,4 @@
-{% extends "payment_base_file.html" %}
+{% extends "base_file.html" %}
 
 {% block title %}<title>login</title> {% endblock %}
 {% block header %} {% endblock %}
@@ -11,22 +11,15 @@
                 <div class="col-md-6 col-xl-4">
                     <div class="card border-light">
                         <div class="card-body fw-bolder text-center text-muted d-flex flex-column align-items-center">
-                            <div class="bs-icon-xl bs-icon-circle bs-icon-primary bs-icon my-4">
-                                <img class="rounded-circle img-fluid" src="{% static 'images/login/login_image.png' %}" width="150px" height="150px" loading="auto">
-                            </div>
                             {% if qr_image %}
                                 <img src="{{ qr_image }}" alt="QR Code" class="img-fluid my-3" />
                             {% else %}
                                 <p>QR code could not be generated.</p>
-                            {% endif %}
+                            {% endif %} 
                             <div>
-                                <div class="row">
-                                    <div class="col-12 col-sm-12 col-md-2">
-                                    </div>
-                                    <div class="col-12 col-sm-12 col-md-8">
-                                        <p> Scan from the app to login </p>
-                                    </div>
-                                    <div class="col-12 col-sm-12 col-md-2">
+                                <div class="row"> 
+                                    <div class="col-12 col-sm-12 col-md-12">
+                                        <h3> Scan from the mobile application to login </h3>
                                     </div>
                                 </div>
                             </div>

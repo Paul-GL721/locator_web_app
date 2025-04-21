@@ -1,0 +1,22 @@
+<!-- Loads the base file -->
+{% extends "payment_base_file.html" %}
+
+<!-- title -->
+{% block title %}<title>Loggedout</title> {% endblock %}
+
+
+{% block content %}
+    <section class="text-center bg-light features-icons" style="padding-top: 1rem;padding-bottom: 1rem;">
+        <div class="container-fluid" style="/*padding-top: 2rem;*/">
+            <div class="row">
+                <div class="col">
+                    <p class="lead fw-lighter text-primary" style="font-size: 30px">You have been successfully logged out!</p>
+                    <p class="lead fw-lighter text-primary" style="font-size: 15px">Would you like to logback in?</p>
+                    <p class="lead fw-lighter text-primary" style="font-size: 30px"><a href="{% url 'login' %}?next={{ request.GET.next }}">CLICK HERE TO LOGIN</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock  %}
+

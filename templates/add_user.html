@@ -1,0 +1,113 @@
+{% extends "payment_base_file.html" %}
+
+{% block title %}<title>AddUser</title> {% endblock %}
+
+
+<!-- Body contents contents -->
+{% block content %}
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-1"></div>
+            <div class="col-sm-12 col-md-8">
+                <section>
+                    <div>
+                        <form action="{% url 'website_adduser' %}" method="post" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <div id="adduserdetails" class="adduserform-page">
+                                <h1 class="fw-lighter signupheading">Add a User to an Existing Company or Account</h1>
+                                <p class="lead fw-lighter text-center mx-auto mb-5">We add a user together with permissions to an existing account</p>
+                                <div class="row" style="padding-bottom: 20px;">
+                                    <div class="col-sm-12 col-md-5 text-start text-md-end"><label class="col-form-label signuplabel" for="{{adduser_form.user_company.id_for_label}}">Company Name:</label></div>
+                                    <div class="col-sm-12 col-md-7 fw-normal">{{adduser_form.user_company}}</div>
+                                </div>
+                                <div class="row" style="display: none;">
+                                    <div class="col-sm-12 col-md-5 text-start text-md-end"><label class="col-form-label signuplabel" for="{{adduser_form.user_companyid.id_for_label}}">Company ID:</label></div>
+                                    <div class="col-sm-12 col-md-7 fw-normal">{{adduser_form.user_companyid}}</div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="row">
+                                        <div class="col-sm-12 col-md-5 text-start text-md-end"><label class="col-form-label signuplabel" for="{{adduser_form.user_department.id_for_label}}">Department:</label></div>
+                                        <div class="col-sm-12 col-md-7 fw-normal">{{adduser_form.user_department}}</div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="row">
+                                        <div class="col-sm-12 col-md-5 text-start text-md-end"><label class="col-form-label signuplabel" for="{{adduser_form.user_first_name.id_for_label}}">First Name:</label></div>
+                                        <div class="col-sm-12 col-md-7 fw-normal">{{adduser_form.user_first_name}}</div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="row">
+                                        <div class="col-sm-12 col-md-5 text-start text-md-end"><label class="col-form-label signuplabel" for="{{adduser_form.user_last_name.id_for_label}}">Last Name:</label></div>
+                                        <div class="col-sm-12 col-md-7 fw-normal">{{adduser_form.user_last_name}}</div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="row">
+                                        <div class="col-sm-12 col-md-5 text-start text-md-end"><label class="col-form-label signuplabel" for="{{adduser_form.user_username.id_for_label}}">Username:</label></div>
+                                        <div class="col-sm-12 col-md-7 fw-normal">{{adduser_form.user_username}}</div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="row">
+                                        <div class="col-sm-12 col-md-5 text-start text-md-end"><label class="col-form-label signuplabel" for="adduser_permissions">Grant Permissions:</label></div>
+                                        <div class="col-sm-12 col-md-7 fw-normal">
+                                            <div class="row">
+                                                <div class="col-md-4">
+                                                    <div class="form-check">{{adduser_form.accountsAdminPermission}}<label class="form-check-label" for="{{adduser_form.accountsAdminPermission.id_for_label}}">Accounts Admin</label></div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div class="form-check">{{adduser_form.salesAdminPermission}}<label class="form-check-label" for="{{adduser_form.salesAdminPermission.id_for_label}}">Sales Admin</label></div>
+                                                </div>
+                                                <div class="col-md-5">
+                                                    <div class="form-check">{{adduser_form.hrAdminPermission}}<label class="form-check-label" for="{{adduser_form.hrAdminPermission.id_for_label}}">Human Resource Admin</label></div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-4">
+                                                    <div class="form-check">{{adduser_form.accountsBasicPermission}}<label class="form-check-label" for="{{adduser_form.accountsBasicPermission.id_for_label}}">Accounts Basic</label></div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div class="form-check">{{adduser_form.salesBasicPermission}}<label class="form-check-label" for="{{adduser_form.salesBasicPermission.id_for_label}}">Sales Basic</label></div>
+                                                </div>
+                                                <div class="col-md-5">
+                                                    <div class="form-check">{{adduser_form.hrBasicPermission}}<label class="form-check-label" for="{{adduser_form.hrBasicPermission.id_for_label}}">Human Resource Basic</label></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="row">
+                                        <div class="col-sm-12 col-md-5 text-start text-md-end"><label class="col-form-label signuplabel" for="{{adduser_form.user_gender.id_for_label}}">Gender:</label></div>
+                                        <div class="col-sm-12 col-md-7 fw-normal">{{adduser_form.user_gender}}</div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="row">
+                                        <div class="col-sm-12 col-md-5 text-start text-md-end"><label class="col-form-label signuplabel" for="{{adduser_form.user_email.id_for_label}}">Email Address:</label></div>
+                                        <div class="col-sm-12 col-md-7 fw-normal">{{adduser_form.user_email}}</div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="row">
+                                        <div class="col-sm-12 col-md-5 text-start text-md-end"><label class="col-form-label signuplabel" for="{{adduser_form.user_telephone.id_for_label}}">Telephone Contact:</label></div>
+                                        <div class="col-sm-12 col-md-7 fw-normal">{{adduser_form.user_telephone}}</div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col"></div>
+                                    <div class="col"></div>
+                                    <div class="col"><button class="btn btn-success" id="addusersubmitbtn" type="submit">Submit</button></div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </section>
+            </div>
+            <div class="col-md-3"></div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block footer %}   {% endblock %}

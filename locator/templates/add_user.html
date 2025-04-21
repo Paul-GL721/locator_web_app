@@ -1,0 +1,56 @@
+<!-- Loads the base file -->
+{% extends "base_file.html" %}
+
+<!-- title -->
+{% block title %}<title>Add User</title> {% endblock %}
+
+{% block navigationbar %}
+    <nav class="navbar navbar-light navbar-expand-md bg-info" style="background: #17a2b8; padding-bottom: 5px">
+        {% if user.is_authenticated %}
+            <div class="container">
+                <a href="#"><strong>{{ user.get_username }}</strong></a>
+                <div class="collapse navbar-collapse" id="navcol-3">
+                    <ul class="navbar-nav mx-auto">         
+                        {% block navigation_forms %}
+                        {% endblock %}
+                        {% block navigation_actions %}
+                        {% endblock %}   
+                    </ul>
+                    <a class="btn btn-primary" role="button" href="{% url 'logout' %}?next={{ request.path }}">Logout</a>
+                </div>
+            </div>
+            {% else %}
+            <a class="btn btn-primary" role="button" href="{% url 'login' %}?next={{ request.path }}">Login</a>
+        {% endif %}
+    </nav>
+{% endblock %}
+
+{% block content %}
+    {% if user.is_authenticated %}
+        <section class="text-center bg-light features-icons" style="padding-top: 1rem;padding-bottom: 1rem;">
+            <div class="container-fluid">
+                <div class="row">
+                    
+                </div>
+                <div class="row">
+                    <div class="col-lg-4"></div>
+                    <div class="col-lg-4">
+                        <div class="mx-auto features-icons-item mb-5 mb-lg-0 mb-lg-3">
+                            <a href="#">
+                                <div class="d-flex features-icons-icon"><i class="icon-graph m-auto text-primary" data-bss-hover-animate="pulse"></i></div>
+                                <h3 data-bss-hover-animate="pulse">{{ group_code }}</h3>
+                            </a>
+                            <p class="lead mb-0">Share this code with a user to join your group.</p>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                </div>
+
+                <div class="row">                                
+                </div>
+            </div>
+        </section>
+    {% endif %}
+
+{% endblock  %}
+
