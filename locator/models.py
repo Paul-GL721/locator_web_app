@@ -106,10 +106,8 @@ class LocAppGroups(models.Model):
         blank=False, max_length=200, help_text='Enter Group name')
     LocAppGrp_address = models.TextField(
         blank=True, null=True, max_length=60, help_text='Enter Group address')
-    LocAppGrp_random_id = models.TextField(
-        blank=True, max_length=60, help_text='Random id to identify a group')
-    LocAppGrp_user = models.ManyToManyField(
-        'LocAppUser', related_name='locigroup')
+    LocAppGrp_user = models.ManyToManyField('LocAppUser', through='LocAppGrpStatus', through_fields=(
+        'LocAppGrp_Fkeyid', 'locuser_Fkeyid'), related_name='locigroup')
     LocAppGrp_description = models.TextField(
         blank=True, null=True, max_length=150, help_text='Decribe your company')
     server_Captured_on = models.DateTimeField(
@@ -123,6 +121,24 @@ class LocAppGroups(models.Model):
     # Methods
     def __str__(self):
         return f'{self.LocAppGrp_name}'
+
+
+class LocAppGrpStatus(models.Model):
+    grpstatus_id = models.AutoField(primary_key=True)
+    LocAppGrp_Fkeyid = models.ForeignKey(
+        LocAppGroups, on_delete=models.CASCADE, related_name='statusgrps')
+    locuser_Fkeyid = models.ForeignKey(
+        LocAppUser, on_delete=models.CASCADE, related_name='statuser')
+    useradmin = models.BooleanField(
+        help_text='Choose whether the user is a group admin or not')
+
+    # Meta
+    class Meta:
+        ordering = ['grpstatus_id']
+
+    # Methods
+    def __str__(self):
+        return (self.useradmin)
 
 
 class QRLoginSession(models.Model):
