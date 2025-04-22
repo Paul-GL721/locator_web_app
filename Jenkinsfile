@@ -12,21 +12,18 @@ pipeline {
 		VERSION="0.1.${BUILD_NUMBER}"
 		BASE_DIRECTORY='Backend/track_locator'
 		REMOTE_USER='k8sdeployuser'
-		REMOTE_DIR='STAGING_BACKEND_LOCATOR'
+		REMOTE_DIR='STAGING_BACKEND_LOCATORAPP'
 		REMOTE_FOLDER='Backend/track_locator'
 		REMOTE_REPO_NAME='staging_backend_locator'
 		K8S_DEPLOYMENT_FOLDER='z_k8s_deployment'
 		K8S_HELM_CHARTS_FOLDER='helm_charts'
-		K8S_HELM_CHART_TYPE_FOLDER='staging-locator'
-		K8S_RELEASE_NAME='locator-staging'
+		K8S_HELM_CHART_TYPE_FOLDER='staging-locatorapp'
+		K8S_RELEASE_NAME='locatorapp-staging'
 		K8S_NAMESPACE='locator-app-staging'
 		GIT_REPO='git@github.com:Paul-GL721/locator.git'
 		GH_TOKENCRED=credentials('jenkins-post-pr-portfolio')
-        REMOTE_HOST=credentials('aws-host')
-        AWSACCOUNT=credentials('aws-account-number')
-		K8S_CRONJOBSECRET_KEYID=credentials('k8s_cronjobsecrets_keyid')
-		K8S_CRONJOBSECRET_SECRET_KEY=credentials('k8s_cronjobsecrets_secretkey')
-		K8S_APPSECRET_YAML=credentials('k8s_appsecrets_stage_yaml')
+		DOCKER_ACCOUNT='paulgl721'
+		K8S_APPSECRET_YAML=credentials('k8s_locatorappsecrets_stage_yaml')
 		EMAIL_TO='team@paulgobero.com'
 	}
 
@@ -129,7 +126,7 @@ pipeline {
 						--extra-vars="REMOTE_USER=${env.REMOTE_USER} \
 						GIT_REPO=${env.GIT_REPO} \
 						VERSION=${env.VERSION} \
-						AWSACCOUNT=${env.AWSACCOUNT} \
+						DOCKER_ACCOUNT=${env.DOCKER_ACCOUNT} \
 						REMOTE_HOST=${env.REMOTE_HOST} \
 						REMOTE_DIR=${env.REMOTE_DIR} \
 						REMOTE_FOLDER=${env.REMOTE_FOLDER} \
@@ -138,8 +135,6 @@ pipeline {
 						K8S_HELM_CHARTS_FOLDER=${env.K8S_HELM_CHARTS_FOLDER} \
 						K8S_HELM_CHART_TYPE_FOLDER=${env.K8S_HELM_CHART_TYPE_FOLDER} \
 						K8S_RELEASE_NAME=${env.K8S_RELEASE_NAME} \
-						K8S_CRONJOBSECRET_KEYID=${env.K8S_CRONJOBSECRET_KEYID} \
-						K8S_CRONJOBSECRET_SECRET_KEY=${env.K8S_CRONJOBSECRET_SECRET_KEY} \
 						K8S_APPSECRET_YAML=${env.K8S_APPSECRET_YAML} \
 						K8S_NAMESPACE=${env.K8S_NAMESPACE}" \
 						-vvv
@@ -246,8 +241,8 @@ pipeline {
 					sh 'echo \$GH_TOKENCRED_PSW|gh auth login --hostname github.com --with-token'
 					//sh 'echo $GH_TOKENCRED_PSW | gh auth login --hostname github.com --with-token'
 					sh 'gh auth status'					
-					echo '.............Creating pull request on master branch..........'
-					sh 'gh pr create --title "Production branch v$VERSION was successful" --body "Production branch version$VERSION was successfully tested and deployed; needs to be merged into master" --base master --head tmpproductionV$VERSION'					
+					echo '.............Creating pull request on main branch..........'
+					sh 'gh pr create --title "Production branch v$VERSION was successful" --body "Production branch version$VERSION was successfully tested and deployed; needs to be merged into main" --base main --head tmpproductionV$VERSION'					
 					sh 'gh auth logout --hostname github.com'
 				}				
 			}
@@ -278,12 +273,12 @@ pipeline {
 		stage('10. Deploy to production EC2 instance') {
 			// Define environment variables
 			environment {
-				REMOTE_DIR = 'APMSYSTEM'
-				REMOTE_REPO_NAME = 'apmsystem'
-				K8S_HELM_CHART_TYPE_FOLDER = 'estatesapp'
-				K8S_RELEASE_NAME = 'estatesapp'
-				K8S_NAMESPACE = 'estates-app'
-				K8S_APPSECRET_YAML = credentials('k8s_appsecrets_yaml')
+				REMOTE_DIR = 'STAGING_BACKEND_LOCATORAPP'
+				REMOTE_REPO_NAME = 'locatorapp'
+				K8S_HELM_CHART_TYPE_FOLDER = 'locatorapp'
+				K8S_RELEASE_NAME = 'locatorapp'
+				K8S_NAMESPACE = 'locator-app'
+				K8S_APPSECRET_YAML = credentials('k8s_locatorappsecrets_yaml')
 			}
 			
 			// Execute if it's the main branch
@@ -306,7 +301,7 @@ pipeline {
 						--extra-vars="REMOTE_USER=${env.REMOTE_USER} \
 						GIT_REPO=${env.GIT_REPO} \
 						VERSION=${env.VERSION} \
-						AWSACCOUNT=${env.AWSACCOUNT} \
+						DOCKER_ACCOUNT=${env.DOCKER_ACCOUNT} \
 						REMOTE_HOST=${env.REMOTE_HOST} \
 						REMOTE_DIR=${env.REMOTE_DIR} \
 						REMOTE_FOLDER=${env.REMOTE_FOLDER} \
@@ -315,8 +310,6 @@ pipeline {
 						K8S_HELM_CHARTS_FOLDER=${env.K8S_HELM_CHARTS_FOLDER} \
 						K8S_HELM_CHART_TYPE_FOLDER=${env.K8S_HELM_CHART_TYPE_FOLDER} \
 						K8S_RELEASE_NAME=${env.K8S_RELEASE_NAME} \
-						K8S_CRONJOBSECRET_KEYID=${env.K8S_CRONJOBSECRET_KEYID} \
-						K8S_CRONJOBSECRET_SECRET_KEY=${env.K8S_CRONJOBSECRET_SECRET_KEY} \
 						K8S_APPSECRET_YAML=${env.K8S_APPSECRET_YAML} \
 						K8S_NAMESPACE=${env.K8S_NAMESPACE}" \
 						-vvv
