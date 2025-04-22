@@ -1,0 +1,96 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "locatorapp.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "locatorapp.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "locatorapp.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "locatorapp.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "locatorapp.serviceAccountName" . }}
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          {{- with .Values.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.containerPort }}
+              protocol: TCP
+          env:
+            - name: {{ .Values.secretRef.dbenvSecretkey }} 
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secretRef.dbexistingSecretname }}
+                  key: {{ .Values.secretRef.dbexistingSecretkey }}
+          {{- with .Values.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+          #mount configmaps as volumes
+          - name: {{ .Release.Name }}-configmap
+            mountPath: {{ .Values.volumeMounts.configfile_mountPath | quote }}
+            readOnly: true
+          #mount staticfiles as volumes
+          - name: {{ .Release.Name }}-staticfiles
+            mountPath: {{ .Values.volumeMounts.staticfile_mountPath | quote }}
+            subPath: {{ .Values.volumeMounts.staticfile_subPath | quote }} 
+      volumes:
+      - name: {{ .Release.Name }}-configmap
+        configMap:
+          name: {{ .Release.Name }}-configmap
+      - name: {{ .Values.secretRef.dbexistingSecretname }}
+        secret:
+          secretName: {{ .Values.secretRef.dbexistingSecretname }}
+      - name: {{ .Release.Name }}-staticfiles
+        persistentVolumeClaim:
+          claimName: {{ .Values.volumes.pvcStaticfiles.existingpvclaimName }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
