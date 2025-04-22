@@ -26,8 +26,8 @@ configmapRef:
   CSRF_TRUSTED_ORIGINS: "https://staging-locator.paulgobero.com, http://localhost, http://127.0.0.1"
   SECRET_KEY: "django-stagingsecure-^v25nd85__t013o5=7+v09mng5@(nded@w5-7@kuy*uh&vj@o8c@2k"
   SQL_ENGINE: "django.db.backends.postgresql"
-  SQL_DATABASE: "staging-locatordatabase"
-  SQL_USER: "locatoruser"
+  SQL_DATABASE: "staging-locatordb"
+  SQL_USER: "staginglocatoruser"
   SQL_HOST: "postgresqldb.databases.svc.cluster.local"
   SQL_PORT: "5432"
 
