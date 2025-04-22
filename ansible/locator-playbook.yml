@@ -1,0 +1,78 @@
+---
+#test ansible connection
+- name: Run the test playbook 
+  gather_facts: false
+  hosts: localhost
+  tasks:
+    - name: Get the username running this playbook
+      become: false
+      local_action: command whoami
+      register: username_on_the_host
+    - name: Display the User name
+      ansible.builtin.debug:
+        msg: "Hello User {{ username_on_the_host.stdout }} from Jenkins and Ansible!!"
+
+#deploy to a kubernetes cluster
+- name: Deploy to kubernetes cluster
+  hosts: k8scluster
+  vars:
+    k8s_files_base: /home/{{ REMOTE_USER }}/{{ REMOTE_DIR }}/{{ REMOTE_FOLDER }}/{{ K8S_DEPLOYMENT_FOLDER }}
+  tasks:
+    - name: check availabilty of server
+      become: true
+      remote_user: "{{ REMOTE_USER }}"
+      action: ping
+
+    - name: Create a directory
+      ansible.builtin.file:
+        path: /home/{{ REMOTE_USER }}/{{ REMOTE_DIR }}
+        state: directory
+        mode: u=rwx,g=rwx,o=rx
+        recurse: yes
+        owner: "{{ REMOTE_USER }}"
+        group: "{{ REMOTE_USER }}"
+
+    - name: Clone the master branch of the repository
+      ansible.builtin.git:
+        repo: "{{ GIT_REPO }}"
+        dest: /home/{{ REMOTE_USER }}/{{ REMOTE_DIR }}
+        single_branch: yes
+        version: main
+        force: yes
+        key_file: /home/{{ REMOTE_USER }}/.ssh/ansiblegithub
+
+
+    - name: Create a k8s namespace
+      kubernetes.core.k8s:
+        name: "{{ K8S_NAMESPACE }}"
+        api_version: v1
+        kind: Namespace
+        state: present
+
+    
+    - name: Deploy the Locator helm chart from local path
+      kubernetes.core.helm:
+        release_name: "{{ K8S_RELEASE_NAME }}"
+        chart_ref: "{{ k8s_files_base }}/{{ K8S_HELM_CHARTS_FOLDER }}/{{ K8S_HELM_CHART_TYPE_FOLDER }}"
+        release_namespace: "{{ K8S_NAMESPACE }}"
+        update_repo_cache: false        # Pulls latest chart metadata
+        wait: true                      # Waits for resources to be fully ready
+        timeout: 800s                    # Maximum time in sec to wait for the resources to deploy
+        release_values:
+          image:
+            repository: "{{ DOCKER_ACCOUNT }}/{{ REMOTE_REPO_NAME }}" #repository containg the image
+            tag: "V{{ VERSION }}"
+          secretRef:
+            actualdbpassword: "{{ K8S_APPSECRET_YAML }}"
+            
+          
+    - name: Check if deployment pods are running
+      kubernetes.core.k8s_info:
+        kind: Pod
+        namespace: "{{ K8S_NAMESPACE }}"
+      register: pod_info
+
+    - name: Show running pods
+      debug:
+        var: pod_info.resources
+
