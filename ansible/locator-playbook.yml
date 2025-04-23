@@ -32,14 +32,36 @@
         owner: "{{ REMOTE_USER }}"
         group: "{{ REMOTE_USER }}"
 
-    - name: Clone the master branch of the repository
+    - name: Clone the main branch of the repository
       ansible.builtin.git:
         repo: "{{ GIT_REPO }}"
         dest: /home/{{ REMOTE_USER }}/{{ REMOTE_DIR }}
         single_branch: yes
         version: main
         force: yes
-        key_file: /home/{{ REMOTE_USER }}/.ssh/ansiblegithub
+        #key_file: /home/{{ REMOTE_USER }}/.ssh/ansiblegithub
+
+    
+    - name: Add server4 to [k8scluster]
+      community.general.ini_file:
+        path: /home/{{ REMOTE_USER }}/{{ REMOTE_DIR }}/{{ REMOTE_FOLDER }}/ansible/inventory.ini
+        section: "k8scluster"
+        option: "server4"
+        value: ""
+        
+
+    - name: Set host variables for server4
+      community.general.ini_file:
+        path: /home/{{ REMOTE_USER }}/{{ REMOTE_DIR }}/{{ REMOTE_FOLDER }}/ansible/inventory.ini
+        section: "server4"
+        option: "{{ item.key }}"
+        value: "{{ item.value }}"
+      loop:
+        - { key: 'ansible_host', value: "{{ ANSIBLE_HOST }}" }
+        - { key: 'ansible_user', value: "{{ ANSIBLE_USER }}" }
+        - { key: 'ansible_connection', value: 'ssh' }
+        - { key: 'ansible_ssh_private_key_file', value: "{{ ANSIBLE_PRIVATE_KEY_PATH }}" }
+        - { key: 'ansible_python_interpreter', value: '/usr/bin/python3' }
 
 
     - name: Create a k8s namespace
