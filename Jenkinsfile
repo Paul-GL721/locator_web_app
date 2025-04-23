@@ -126,7 +126,7 @@ pipeline {
 					//run ansible-playbook
 					sh """
 						ansible-playbook ./${BASE_DIRECTORY}/ansible/staging-playbook.yml \
-						-i ./${BASE_DIRECTORY}/ansible/inventory.ini \
+						-i ./${BASE_DIRECTORY}/ansible/staging.ini \
 						--extra-vars="REMOTE_USER=${env.REMOTE_USER} \
 						GIT_REPO=${env.GIT_REPO} \
 						VERSION=${env.VERSION} \
@@ -233,7 +233,7 @@ pipeline {
 			}
 		}
 
-		stage('8. Create pull request from production to master branch') {
+		stage('8. Create pull request from production to main branch') {
 			//Execute if its the production branch
 			when {
 				branch 'production'
@@ -281,7 +281,7 @@ pipeline {
 		stage('10. Deploy to production EC2 instance') {
 			// Define environment variables
 			environment {
-				REMOTE_DIR = 'STAGING_BACKEND_LOCATORAPP'
+				REMOTE_DIR = 'PRODUCTION_BACKEND_LOCATORAPP'
 				REMOTE_REPO_NAME = 'locatorapp'
 				K8S_HELM_CHART_TYPE_FOLDER = 'locatorapp'
 				K8S_RELEASE_NAME = 'locatorapp'
@@ -305,8 +305,8 @@ pipeline {
 				script {
 					// Run production ansible-playbook
 					sh """
-						ansible-playbook ./${BASE_DIRECTORY}/ansible/apmsystem-playbook.yml \
-						-i ./${BASE_DIRECTORY}/ansible/inventory.ini \
+						ansible-playbook ./${BASE_DIRECTORY}/ansible/production-playbook.yml \
+						-i ./${BASE_DIRECTORY}/ansible/production.ini \
 						--extra-vars="REMOTE_USER=${env.REMOTE_USER} \
 						GIT_REPO=${env.GIT_REPO} \
 						VERSION=${env.VERSION} \
