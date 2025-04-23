@@ -39,7 +39,7 @@
         single_branch: yes
         version: main
         force: yes
-        #key_file: /home/{{ REMOTE_USER }}/.ssh/ansiblegithub
+        key_file: /home/{{ REMOTE_USER }}/.ssh/ansiblegithub
 
     
     - name: Create inventory.ini (Add server4 to [k8scluster])

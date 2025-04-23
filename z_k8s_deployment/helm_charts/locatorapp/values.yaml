@@ -24,7 +24,7 @@ configmapRef:
   DEBUG: "False" 
   DJANGO_ALLOWED_HOSTS: "locatorapp.paulgobero.com" 
   CSRF_TRUSTED_ORIGINS: "https://locatorapp.paulgobero.com"
-  SECRET_KEY: "django-stagingsecure-^v25nd85__t013o5=7+v09mng5@(nded@w5-7@kuy*uh&vj@o8c@2k"
+  APP_DOMAIN: https://locatorapp.paulgobero.com
   SQL_ENGINE: "django.db.backends.postgresql"
   SQL_DATABASE: "locatorappdb"
   SQL_USER: "locatoruser"
@@ -32,15 +32,22 @@ configmapRef:
   SQL_PORT: "5432"
 
 secretRef:
-  #actual database password as plain text (This is set for build pipeline purposes, we suggest you use an existing secret)
+  #actual database password and django secret key as plain text (This is set for build pipeline purposes, we suggest you use an existing secret)
   actualdbpassword: password 
-  existingdbsecret: false
+  actualdjangosecretkey: django-stagingsecure-^v25nd85__t013o5=7+v09mng5@(nded@w5-7@kuy*uh&vj@o8c@2k 
   #environment name of the secret in the deployment (used to identify the secret in the deployment file)
   dbenvSecretkey: SQL_PASSWORD
-  #name of the existing secret containig the password to the database(the password links app to db)
-  dbexistingSecretname: staging-secrets
-  #key of the existing secret containig the password to the database (the password links app to db)
-  dbexistingSecretkey: SQL_PASSWORD
+  djangoenvsecretkeyname: SECRET_KEY
+  #secret name to create if existing secret is false
+  secretnametocreate: locappstaging-secret
+  #set to true if you have an exsting secret: its should have the django secret key and password
+  existingsecret:
+    existingdbsecret: false
+    #name of the existing secret containig the password to the database(the password links app to db)
+    dbexistingSecretname: ""
+    #name of the key of the existing secret containig the password to the database (the password links app to db)
+    dbexistingSecretkey: SQL_PASSWORD
+    djangoexistingsecretkeyname: SECRET_KEY
 
 # This section builds out the service account more information can be found here: https://kubernetes.io/docs/concepts/security/service-accounts/
 serviceAccount:

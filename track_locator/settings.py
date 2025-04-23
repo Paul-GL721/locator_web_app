@@ -33,7 +33,6 @@ if RUNNING_IN_KUBERNETES:
         config_dir / 'DJANGO_ALLOWED_HOSTS').read().strip().split(",")
     CSRF_TRUSTED_ORIGINS = open(
         config_dir / 'CSRF_TRUSTED_ORIGINS').read().strip().split(",")
-    SECRET_KEY = open(config_dir / 'SECRET_KEY').read().strip()
     SQL_ENGINE = open(config_dir / 'SQL_ENGINE').read().strip()
     SQL_DATABASE = open(config_dir / 'SQL_DATABASE').read().strip()
     SQL_USER = open(config_dir / 'SQL_USER').read().strip()
@@ -41,8 +40,15 @@ if RUNNING_IN_KUBERNETES:
     SQL_PORT = open(config_dir / 'SQL_PORT').read().strip()
     APP_DOMAIN = open(config_dir / 'APP_DOMAIN').read().strip()
 
-    # read the values in the secret passed as an env variables
-    PASSWORD = os.getenv('SQL_PASSWORD')
+    # Get actual environment variable names from deployment pointers
+    sql_password_env = os.getenv(
+        "DJANGO_SQL_PASSWORD_ENV_VAR_NAME", "SQL_PASSWORD")
+    secret_key_env = os.getenv(
+        "DJANGO_SECRET_KEY_ENV_VAR_NAME", "DJANGO_SECRET_KEY")
+    # the real values
+    SECRET_KEY = os.getenv(secret_key_env)
+    PASSWORD = os.getenv(sql_password_env)
+
 else:
     # if in development, Load environment variables from the local .env file
     env_file_path = Path(__file__).resolve().parent.parent / '.env'
