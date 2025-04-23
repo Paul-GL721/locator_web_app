@@ -59,7 +59,7 @@ pipeline {
 				echo '..................Merging if anyfiles have changed................'
 				
 				//with github credentials stored in jenkins server
-				sshagent (credentials: ['estates-app-jenkins-to-github']) {
+				sshagent (credentials: ['locator-app-jenkins-to-github']) {
 					script {
 						//make the merge script executable
 						sh 'chmod +x ./${BASE_DIRECTORY}/jenkins-scripts/merge-code-step.sh'
@@ -176,7 +176,7 @@ pipeline {
 			}
 			steps {
 				//Use github credentials stored in jenkins server
-				sshagent (credentials: ['estates-app-jenkins-to-github']) {
+				sshagent (credentials: ['locator-app-jenkins-to-github']) {
 					script {
 						echo '..............Creating temporary pull request branch................'
 						//make the script executable
@@ -218,7 +218,7 @@ pipeline {
 			}
 			steps {
 				//with github credentials stored in jenkins server
-				sshagent (credentials: ['estates-app-jenkins-to-github']) {
+				sshagent (credentials: ['locator-app-jenkins-to-github']) {
 					script {
 						echo '..............Creating temporary pull request branch................'
 						echo 'Creating temp branch'
