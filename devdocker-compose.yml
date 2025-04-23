@@ -1,0 +1,81 @@
+version: '3.9'
+
+services:
+  #the django web application
+  locappdevelopment:
+    build:
+      context: .
+      dockerfile: dev.Dockerfile
+    image: dev_locatatapp_development:devapp 
+    volumes:
+      - .:/dev-code
+      - locapp_dev-static-volume:/dev-code/staticfiles
+    
+    environment:
+      # Django environment variables
+      SECRET_KEY: ${SECRET_KEY}
+      DEBUG: ${DEBUG} 
+      DJANGO_ALLOWED_HOSTS: "*"
+      SQL_ENGINE: 'django.db.backends.postgresql_psycopg2'
+      SQL_DATABASE: ${SQL_DATABASE}
+      SQL_USER: ${SQL_USER}
+      SQL_PASSWORD: ${SQL_PASSWORD}
+      SQL_HOST: devdatabase  
+      SQL_PORT: 5432 
+    restart: always
+    ports:
+      - "8000:8000"
+    #waits for db to be ready
+    depends_on:
+      - devdatabase 
+    networks:
+      - locapp_dev-db-network #communicate with the database
+    command: >
+      bash -c "/wait-for devdatabase:5432 --timeout=900 &&
+      python3 manage.py collectstatic --no-input &&
+      python3 manage.py makemigrations &&
+      python3 manage.py migrate &&
+      gunicorn track_locator.wsgi:application --bind :8000"
+
+  devdatabase:
+    image: postgis/postgis:${DB_ENGINE_TAG}
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - 5432:5432
+    volumes:
+      - locapp_local_db_storage:/var/lib/postgresql/data
+    networks:
+      - locapp_pgadmin_network #connects to pgadmin GUI
+      - locapp_dev-db-network #communicate with the application
+    restart: always
+    
+
+  devpgadmin_gui:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: info@admin.com
+      PGADMIN_DEFAULT_PASSWORD: root23s
+      PGADMIN_LISTEN_PORT: 5050
+    ports:
+      - 5050:5050
+    networks:
+      - locapp_pgadmin_network
+    volumes:
+      - locapp_local_pgadmin_storage:/var/lib/pgadmin
+    restart: always
+
+#create networks
+networks:
+  locapp_pgadmin_network:
+    driver: bridge
+  locapp_dev-db-network:
+    driver: bridge
+
+#create persistent volumes
+volumes:
+  locapp_local_db_storage:
+  locapp_local_pgadmin_storage:
+  locapp_dev-static-volume:
