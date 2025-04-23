@@ -86,6 +86,7 @@
             tag: "V{{ VERSION }}"
           secretRef:
             actualdbpassword: "{{ K8S_APPSECRET_YAML }}"
+            actualdjangosecretkey: "{{ K8S_DJANGO_APPSECRET_YAML }}"
             
           
     - name: Check if deployment pods are running
