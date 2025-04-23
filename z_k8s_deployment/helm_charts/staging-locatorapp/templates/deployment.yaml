@@ -46,11 +46,34 @@ spec:
               containerPort: {{ .Values.service.containerPort }}
               protocol: TCP
           env:
-            - name: {{ .Values.secretRef.dbenvSecretkey }} 
+            # SQL password pulled from Kubernetes Secret
+            - name: {{ .Values.secretRef.dbenvSecretkey }}
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.secretRef.dbexistingSecretname }}
-                  key: {{ .Values.secretRef.dbexistingSecretkey }}
+                  name: {{- if .Values.secretRef.existingsecret.existingdbsecret }}
+                          {{ .Values.secretRef.existingsecret.dbexistingSecretname }}
+                        {{- else }}
+                          {{ .Values.secretRef.secretnametocreate }}
+                        {{- end }}
+                  key: {{ .Values.secretRef.existingsecret.dbexistingSecretkey }}
+            # Django secret key pulled from the same Secret
+            - name: {{ .Values.secretRef.djangoenvsecretkeyname }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{- if .Values.secretRef.existingsecret.existingdbsecret }}
+                          {{ .Values.secretRef.existingsecret.dbexistingSecretname }}
+                        {{- else }}
+                          {{ .Values.secretRef.secretnametocreate }}
+                        {{- end }}
+                  key: {{ .Values.secretRef.existingsecret.djangoexistingsecretkeyname }}
+
+            # Pointer to tell Django which ENV var to read for SECRET_KEY
+            - name: DJANGO_SECRET_KEY_ENV_VAR_NAME
+              value: {{ .Values.secretRef.djangoenvsecretkeyname }}
+            # Pointer to tell Django which ENV var to read for SQL_PASSWORD
+            - name: DJANGO_SQL_PASSWORD_ENV_VAR_NAME
+              value: {{ .Values.secretRef.dbenvSecretkey }}
+              
           {{- with .Values.livenessProbe }}
           livenessProbe:
             {{- toYaml . | nindent 12 }}
