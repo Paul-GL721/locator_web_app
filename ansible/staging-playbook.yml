@@ -40,6 +40,26 @@
         version: staging
         force: yes
         key_file: /home/{{ REMOTE_USER }}/.ssh/ansiblegithub
+
+    - name: Create inventory.ini (Add server4 to [k8scluster])
+      community.general.ini_file:
+        path: /home/{{ REMOTE_USER }}/{{ REMOTE_DIR }}/{{ REMOTE_FOLDER }}/ansible/staging.ini
+        section: "k8scluster"
+        option: "server4"
+        value: ""
+
+    - name: Set host variables for server4
+      community.general.ini_file:
+        path: /home/{{ REMOTE_USER }}/{{ REMOTE_DIR }}/{{ REMOTE_FOLDER }}/ansible/staging.ini
+        section: "server4"
+        option: "{{ item.key }}"
+        value: "{{ item.value }}"
+      loop:
+        - { key: 'ansible_host', value: "{{ ANSIBLE_HOST }}" }
+        - { key: 'ansible_user', value: "{{ ANSIBLE_USER }}" }
+        - { key: 'ansible_connection', value: 'ssh' }
+        - { key: 'ansible_ssh_private_key_file', value: "{{ ANSIBLE_PRIVATE_KEY_PATH }}" }
+        - { key: 'ansible_python_interpreter', value: '/usr/bin/python3' }
     
     - name: Create a k8s namespace if not exists
       kubernetes.core.k8s:
@@ -62,8 +82,7 @@
             tag: "V{{ VERSION }}"
           secretRef:
             actualdbpassword: "{{ K8S_APPSECRET_YAML }}"
-              
-          
+                    
     - name: Check if deployment pods are running
       kubernetes.core.k8s_info:
         kind: Pod
@@ -73,4 +92,3 @@
     - name: Show running pods
       debug:
         var: pod_info.resources
-
