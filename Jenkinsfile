@@ -15,6 +15,7 @@ pipeline {
 		REMOTE_DIR='STAGING_BACKEND_LOCATORAPP'
 		REMOTE_FOLDER='Backend/track_locator'
 		REMOTE_REPO_NAME='staging_backend_locator'
+		DOCKER_ACCOUNT='paulgl721'
 		K8S_DEPLOYMENT_FOLDER='z_k8s_deployment'
 		K8S_HELM_CHARTS_FOLDER='helm_charts'
 		K8S_HELM_CHART_TYPE_FOLDER='staging-locatorapp'
@@ -22,8 +23,11 @@ pipeline {
 		K8S_NAMESPACE='locator-app-staging'
 		GIT_REPO='git@github.com:Paul-GL721/locator.git'
 		GH_TOKENCRED=credentials('jenkins-post-pr-portfolio')
-		DOCKER_ACCOUNT='paulgl721'
+		ANSIBLE_HOST=credentials('locapp-ansible-host')
+		ANSIBLE_USER=credentials('locapp-ansible-user')
+		ANSIBLE_PRIVATE_KEY_PATH=credentials('locapp-ansible-privatekey')
 		K8S_APPSECRET_YAML=credentials('k8s_locatorappsecrets_stage_yaml')
+		K8S_DJANGO_APPSECRET_YAML=credentials('k8s_locatorapp-djangosecrets_stage_yaml')
 		EMAIL_TO='team@paulgobero.com'
 	}
 
@@ -135,6 +139,10 @@ pipeline {
 						K8S_HELM_CHARTS_FOLDER=${env.K8S_HELM_CHARTS_FOLDER} \
 						K8S_HELM_CHART_TYPE_FOLDER=${env.K8S_HELM_CHART_TYPE_FOLDER} \
 						K8S_RELEASE_NAME=${env.K8S_RELEASE_NAME} \
+						ANSIBLE_HOST=${env.ANSIBLE_HOST} \
+						ANSIBLE_USER=${env.ANSIBLE_USER} \
+						ANSIBLE_PRIVATE_KEY_PATH=${env.ANSIBLE_PRIVATE_KEY_PATH} \
+						K8S_DJANGO_APPSECRET_YAML=${env.K8S_DJANGO_APPSECRET_YAML} \
 						K8S_APPSECRET_YAML=${env.K8S_APPSECRET_YAML} \
 						K8S_NAMESPACE=${env.K8S_NAMESPACE}" \
 						-vvv
@@ -279,6 +287,7 @@ pipeline {
 				K8S_RELEASE_NAME = 'locatorapp'
 				K8S_NAMESPACE = 'locator-app'
 				K8S_APPSECRET_YAML = credentials('k8s_locatorappsecrets_yaml')
+				K8S_DJANGO_APPSECRET_YAML==credentials('k8s_locatorapp-djangosecrets_yaml')
 			}
 			
 			// Execute if it's the main branch
@@ -310,6 +319,10 @@ pipeline {
 						K8S_HELM_CHARTS_FOLDER=${env.K8S_HELM_CHARTS_FOLDER} \
 						K8S_HELM_CHART_TYPE_FOLDER=${env.K8S_HELM_CHART_TYPE_FOLDER} \
 						K8S_RELEASE_NAME=${env.K8S_RELEASE_NAME} \
+						ANSIBLE_HOST=${env.ANSIBLE_HOST} \
+						ANSIBLE_USER=${env.ANSIBLE_USER} \
+						ANSIBLE_PRIVATE_KEY_PATH=${env.ANSIBLE_PRIVATE_KEY_PATH} \
+						K8S_DJANGO_APPSECRET_YAML=${env.K8S_DJANGO_APPSECRET_YAML} \
 						K8S_APPSECRET_YAML=${env.K8S_APPSECRET_YAML} \
 						K8S_NAMESPACE=${env.K8S_NAMESPACE}" \
 						-vvv
