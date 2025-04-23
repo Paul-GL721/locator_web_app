@@ -42,17 +42,17 @@
         #key_file: /home/{{ REMOTE_USER }}/.ssh/ansiblegithub
 
     
-    - name: Add server4 to [k8scluster]
+    - name: Create inventory.ini (Add server4 to [k8scluster])
       community.general.ini_file:
-        path: /home/{{ REMOTE_USER }}/{{ REMOTE_DIR }}/{{ REMOTE_FOLDER }}/ansible/inventory.ini
+        path: /home/{{ REMOTE_USER }}/{{ REMOTE_DIR }}/{{ REMOTE_FOLDER }}/ansible/production.ini
         section: "k8scluster"
         option: "server4"
         value: ""
-        
+
 
     - name: Set host variables for server4
       community.general.ini_file:
-        path: /home/{{ REMOTE_USER }}/{{ REMOTE_DIR }}/{{ REMOTE_FOLDER }}/ansible/inventory.ini
+        path: /home/{{ REMOTE_USER }}/{{ REMOTE_DIR }}/{{ REMOTE_FOLDER }}/ansible/production.ini
         section: "server4"
         option: "{{ item.key }}"
         value: "{{ item.value }}"
