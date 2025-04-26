@@ -50,21 +50,21 @@ spec:
             - name: {{ .Values.secretRef.dbenvSecretkey }}
               valueFrom:
                 secretKeyRef:
-                  name: {{- if .Values.secretRef.existingsecret.existingdbsecret }}
-                          {{ .Values.secretRef.existingsecret.dbexistingSecretname }}
-                        {{- else }}
-                          {{ .Values.secretRef.secretnametocreate }}
-                        {{- end }}
+                {{- if .Values.secretRef.existingsecret.existingdbsecret }}
+                  name: {{ .Values.secretRef.existingsecret.dbexistingSecretname }}
+                {{- else }}
+                  name: {{ .Values.secretRef.secretnametocreate }}
+                {{- end }}         
                   key: {{ .Values.secretRef.existingsecret.dbexistingSecretkey }}
             # Django secret key pulled from the same Secret
             - name: {{ .Values.secretRef.djangoenvsecretkeyname }}
               valueFrom:
                 secretKeyRef:
-                  name: {{- if .Values.secretRef.existingsecret.existingdbsecret }}
-                          {{ .Values.secretRef.existingsecret.dbexistingSecretname }}
-                        {{- else }}
-                          {{ .Values.secretRef.secretnametocreate }}
-                        {{- end }}
+                {{- if .Values.secretRef.existingsecret.existingdbsecret }}
+                  name: {{ .Values.secretRef.existingsecret.dbexistingSecretname }}
+                {{- else }}
+                  name: {{ .Values.secretRef.secretnametocreate }}
+                {{- end }}
                   key: {{ .Values.secretRef.existingsecret.djangoexistingsecretkeyname }}
 
             # Pointer to tell Django which ENV var to read for SECRET_KEY
