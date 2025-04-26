@@ -24,6 +24,30 @@ import base64
 from urllib.parse import urlencode
 from django.contrib.auth.hashers import make_password
 from django.utils.crypto import get_random_string
+from django.core.exceptions import PermissionDenied
+from django.template.loader import render_to_string
+
+
+
+
+class UserDetailsMixin:
+    """
+    Mixin that returns user details[userid, username, usergroups ]
+    """    
+    def get_user_groups(self):
+        '''
+        get groups a user belongs to
+        '''
+        user = self.request.user
+        if not user.is_authenticated:
+            raise PermissionDenied('You Must be Logged in')
+        return LocAppGroups.objects.filter(statusgrps__locuser_Fkeyid=user).values(
+            'LocAppGrp_id', 'LocAppGrp_name').order_by('-LocAppGrp_id')
+        
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['user_groups'] = self.get_user_groups()
+        return context
 
 
 class index_page(TemplateView):
@@ -38,8 +62,9 @@ class index_page(TemplateView):
 
         # Prepare placeholder query parameters
         query_params = urlencode({
-            'uid': '{uid}',
+            'userid': '{userid}',
             'username': '{username}',
+            'usergroup': '{usergroup}',
             'token': '{token}',
         })
 
@@ -74,7 +99,7 @@ class add_user(TemplateView):
 
 class CreateUserProfile(View):
     """
-    Here we a create a profile for a new user
+    Here we a create a profile for a new user. This is from the mobile application
     """
 
     def post(self, request):
@@ -122,7 +147,7 @@ class CreateUserProfile(View):
                 locuser_Fkeyid=user,
                 useradmin=True
             )
-        elif group_status == "two":
+        elif group_status == "two": #add user to existing group using an exisiting group code
             try:
                 user_group = LocAppGroups.objects.get(
                     LocAppGrp_code=group_code)
@@ -145,6 +170,43 @@ class CreateUserProfile(View):
             "groupname": user_group.LocAppGrp_name if user_group else None,
             "groupcode": user_group.LocAppGrp_code if user_group else None,
         })
+
+class GenerateQRCodeView(UserDetailsMixin, View):
+    '''
+    Generate QRcode which when scanned picks the GPS location of the user
+    '''
+    template_name = 'gps_qrcode.html'
+
+    def get(self, request, *args, **kwargs):
+        available_groups = self.get_user_groups()
+        return render(request, self.template_name, {
+            'available_groups': available_groups,
+        })
+        
+    def post(self, request, *args, **kwargs):
+        usergroup = request.POST.get("usergrp")
+        timestamp = int(time.time())
+        # Prepare placeholder query parameters
+        query_params = urlencode({
+            'usergroup': usergroup,
+            'timestamp': timestamp,
+        })
+
+        qr_url = f"{settings.APP_DOMAIN}/generate-posqr/?{query_params}"
+
+        # Generate QR code
+        qr = qrcode.make(qr_url)
+        buffer = io.BytesIO()
+        qr.save(buffer, format="PNG")
+        img_base64 = base64.b64encode(buffer.getvalue()).decode()
+        qr_image_data = f"data:image/png;base64,{img_base64}"
+
+        # Now render a partial HTML
+        html = render_to_string('gps_qrcode_partial.html', {
+            'qr_image_data': qr_image_data,
+        })
+
+        return JsonResponse({'html': html})
 
 
 class mobile_add_newgpsdata(APIView):
@@ -219,23 +281,7 @@ class OpenAppRedirectView(View):
         return HttpResponse(html)
 
 
-class GenerateQRCodeView(View):
-    '''
-    Generate QRcode which when scanned picks the GPS location of the user
-    '''
 
-    def get(self, request, *args, **kwargs):
-        unit_id = request.GET.get("unit_id", "123")
-        timestamp = int(time.time())
-        query = urlencode({"unit_id": unit_id, "timestamp": timestamp})
-        qr_url = f"https://yourdomain.com/open-app?{query}"
-
-        img = qrcode.make(qr_url)
-        buffer = io.BytesIO()
-        img.save(buffer, format="PNG")
-        buffer.seek(0)
-
-        return HttpResponse(buffer.getvalue(), content_type="image/png")
 
 
 class QRLoginGenerateView(View):
