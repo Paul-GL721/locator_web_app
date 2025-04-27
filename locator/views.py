@@ -189,10 +189,10 @@ class GenerateQRCodeView(UserDetailsMixin, View):
         # Prepare placeholder query parameters
         query_params = urlencode({
             'usergroup': usergroup,
-            'timestamp': timestamp,
+            'qr_timestamp': timestamp,
         })
 
-        qr_url = f"{settings.APP_DOMAIN}/generate-posqr/?{query_params}"
+        qr_url = f"{settings.APP_DOMAIN}/generatepositonqr/?{query_params}"
 
         # Generate QR code
         qr = qrcode.make(qr_url)

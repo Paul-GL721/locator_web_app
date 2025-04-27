@@ -9,7 +9,7 @@ urlpatterns = [
     path("adduser/", add_user.as_view(), name="add_user"),
     path("createuserprofile/", CreateUserProfile.as_view(),
          name="create_user_profile"),
-    path("generate-qr/", GenerateQRCodeView.as_view(), name="generate_qr"),
+    path("generatepositonqr/", GenerateQRCodeView.as_view(), name="generate_qr"),
     # path("open-app/", OpenAppRedirectView.as_view(), name="open_app_redirect"),
     # path("login-generate-qr/", QRLoginGenerateView.as_view(), name="generate_qr"),
     # path("check-qr-login-status/<str:session_token>/", check_qr_login_status, name="qr_login_check"),
