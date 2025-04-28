@@ -280,10 +280,6 @@ class OpenAppRedirectView(View):
         """
         return HttpResponse(html)
 
-
-
-
-
 class QRLoginGenerateView(View):
     '''
     Generate a QRcode that a user will scan to login
