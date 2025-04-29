@@ -94,7 +94,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    
+
 ]
 
 ROOT_URLCONF = 'track_locator.urls'
@@ -186,7 +186,12 @@ AUTH_USER_MODEL = "locator.LocAppUser"
 # Redirect to home URL after login
 # LOGIN_REDIRECT_URL = 'after_login'
 
-#allow cross-origin resource sharing
-#CORS_ALLOWED_ORIGINS = []
+# allow cross-origin resource sharing
+# CORS_ALLOWED_ORIGINS = []
 CORS_ALLOW_ALL_ORIGINS = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# CORS_ALLOWED_ORIGINS = [
+#     "http://localhost:8000",
+#     "file://",  # Cordova file origin
+# ]

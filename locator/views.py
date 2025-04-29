@@ -26,14 +26,15 @@ from django.contrib.auth.hashers import make_password
 from django.utils.crypto import get_random_string
 from django.core.exceptions import PermissionDenied
 from django.template.loader import render_to_string
-
-
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 
 
 class UserDetailsMixin:
     """
     Mixin that returns user details[userid, username, usergroups ]
-    """    
+    """
+
     def get_user_groups(self):
         '''
         get groups a user belongs to
@@ -43,7 +44,7 @@ class UserDetailsMixin:
             raise PermissionDenied('You Must be Logged in')
         return LocAppGroups.objects.filter(statusgrps__locuser_Fkeyid=user).values(
             'LocAppGrp_id', 'LocAppGrp_name').order_by('-LocAppGrp_id')
-        
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['user_groups'] = self.get_user_groups()
@@ -97,6 +98,7 @@ class add_user(TemplateView):
     template_name = "add_user.html"
 
 
+@method_decorator(csrf_exempt, name='dispatch')
 class CreateUserProfile(View):
     """
     Here we a create a profile for a new user. This is from the mobile application
@@ -105,10 +107,11 @@ class CreateUserProfile(View):
     def post(self, request):
         data = request.POST
         # 1.get user data from the form
+        print(data)
         first_name = data.get('first_name')
         last_name = data.get('last_name')
         phone = data.get('telephone')
-        group_status = data.get('group_status')
+        group_status = data.get('group-status')
         group_code = data.get('group_code')
         # generated variables
         gen_username = first_name
@@ -130,6 +133,8 @@ class CreateUserProfile(View):
             password=user_password,
         )
 
+        user_group = None  # Initialize to avoid UnboundLocalError
+
         # 3. Add a user to a group
         if group_status == "one":
             group_name = f"{first_name}'s Group"
@@ -147,7 +152,7 @@ class CreateUserProfile(View):
                 locuser_Fkeyid=user,
                 useradmin=True
             )
-        elif group_status == "two": #add user to existing group using an exisiting group code
+        elif group_status == "two":  # add user to existing group using an exisiting group code
             try:
                 user_group = LocAppGroups.objects.get(
                     LocAppGrp_code=group_code)
@@ -171,6 +176,7 @@ class CreateUserProfile(View):
             "groupcode": user_group.LocAppGrp_code if user_group else None,
         })
 
+
 class GenerateQRCodeView(UserDetailsMixin, View):
     '''
     Generate QRcode which when scanned picks the GPS location of the user
@@ -182,7 +188,7 @@ class GenerateQRCodeView(UserDetailsMixin, View):
         return render(request, self.template_name, {
             'available_groups': available_groups,
         })
-        
+
     def post(self, request, *args, **kwargs):
         usergroup = request.POST.get("usergrp")
         timestamp = int(time.time())
@@ -279,6 +285,7 @@ class OpenAppRedirectView(View):
         </html>
         """
         return HttpResponse(html)
+
 
 class QRLoginGenerateView(View):
     '''
