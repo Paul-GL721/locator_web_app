@@ -11,6 +11,7 @@ qrcode = "*"
 django-environ = "*"
 psycopg = {extras = ["binary"], version = "*"}
 pillow = "*"
+django-cors-headers = "*"
 
 [dev-packages]
 
