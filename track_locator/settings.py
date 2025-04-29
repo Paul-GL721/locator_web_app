@@ -56,6 +56,7 @@ else:
 
     DEBUG = env('DEBUG', default='False')
     ALLOWED_HOSTS = env('DJANGO_ALLOWED_HOSTS', default=['127.0.0.1'])
+    CSRF_TRUSTED_ORIGINS = env('CSRF_TRUSTED_ORIGINS'),
     SECRET_KEY = env('SECRET_KEY')
     SQL_ENGINE = env('SQL_ENGINE', default='django.db.backends.postgresql')
     SQL_DATABASE = str(env('SQL_DATABASE', default=BASE_DIR / 'db.sqlite3'))
@@ -64,6 +65,8 @@ else:
     PASSWORD = env('SQL_PASSWORD', default='')
     SQL_PORT = env('SQL_PORT', default='5432')
     APP_DOMAIN = env('APP_DOMAIN', default='http://localhost:8000')
+
+    print(f"trusted origin are {CSRF_TRUSTED_ORIGINS}")
 
 
 # Application definition
@@ -77,10 +80,13 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework.authtoken',
     'rest_framework',
+    'corsheaders',
     'locator.apps.LocatorConfig',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -88,6 +94,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    
 ]
 
 ROOT_URLCONF = 'track_locator.urls'
@@ -178,3 +185,8 @@ AUTH_USER_MODEL = "locator.LocAppUser"
 
 # Redirect to home URL after login
 # LOGIN_REDIRECT_URL = 'after_login'
+
+#allow cross-origin resource sharing
+#CORS_ALLOWED_ORIGINS = []
+CORS_ALLOW_ALL_ORIGINS = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
