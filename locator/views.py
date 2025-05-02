@@ -43,7 +43,7 @@ class UserDetailsMixin:
         if not user.is_authenticated:
             raise PermissionDenied('You Must be Logged in')
         return LocAppGroups.objects.filter(statusgrps__locuser_Fkeyid=user).values(
-            'LocAppGrp_id', 'LocAppGrp_name').order_by('-LocAppGrp_id')
+            'LocAppGrp_id', 'LocAppGrp_name', 'LocAppGrp_code').order_by('-LocAppGrp_id')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -177,6 +177,44 @@ class CreateUserProfile(View):
         })
 
 
+class QrLoginView(View):
+    """
+    Handles login when a user on the mobile device scans the QR code
+    Expects `userid` and `token` in GET params.
+    """
+
+    def get(self, request, *args, **kwargs):
+        userid = request.Get.get('userid')
+        token = request.Get.get('token')
+
+        if not userid or not token:
+            return HttpResponse("Missing user ID or token", status=400)
+
+        try:
+            user = LocAppUser.objects.get(locuser_id=userid)
+        except user.DoesNotExist:
+            return HttpResponse("User not found", status=404)
+
+        try:
+            user_token = Token.objects.get(user=user)
+        except Token.DoesNotExist:
+            return HttpResponse("Token not found", status=403)
+
+        if user_token.key != token:
+            return HttpResponse("Invalid token", status=403)
+
+        # Log in the user
+        login(request, user)
+
+        # Check if request is from Cordova
+        is_cordova = request.headers.get("X-Cordova-App") == "true"
+
+        if is_cordova:
+            return JsonResponse({"redirect_url": "after_login.html"})
+        else:
+            return redirect('after_login')
+
+
 class GenerateQRCodeView(UserDetailsMixin, View):
     '''
     Generate QRcode which when scanned picks the GPS location of the user
@@ -190,11 +228,11 @@ class GenerateQRCodeView(UserDetailsMixin, View):
         })
 
     def post(self, request, *args, **kwargs):
-        usergroup = request.POST.get("usergrp")
+        usergroupcode = request.POST.get("usergrp")
         timestamp = int(time.time())
         # Prepare placeholder query parameters
         query_params = urlencode({
-            'usergroup': usergroup,
+            'usergroup': usergroupcode,
             'qr_timestamp': timestamp,
         })
 
