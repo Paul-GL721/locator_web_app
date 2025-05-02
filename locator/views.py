@@ -98,6 +98,13 @@ class add_user(TemplateView):
     template_name = "add_user.html"
 
 
+class UsernamePasswdLogin(TemplateView):
+    """
+    Show a template that allows a user to login with a username and password
+    """
+    template_name = "registration/login.html"
+
+
 @method_decorator(csrf_exempt, name='dispatch')
 class CreateUserProfile(View):
     """

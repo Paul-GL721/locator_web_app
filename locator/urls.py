@@ -6,6 +6,8 @@ urlpatterns = [
     path('', index_page.as_view(), name="index_page"),
     path('locator/', index_page.as_view(), name="index_page_indexed"),
     path("afterlogin/", after_login.as_view(), name="after_login"),
+    path("usernamepasswd/", UsernamePasswdLogin.as_view(),
+         name="username_passwd_login"),
     path("adduser/", add_user.as_view(), name="add_user"),
     path("createuserprofile/", CreateUserProfile.as_view(),
          name="create_user_profile"),
