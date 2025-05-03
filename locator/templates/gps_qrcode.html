@@ -22,10 +22,10 @@
                             <label class="form-label fs-4 text-end text-primary col-form-label" for="usergrp">User Group:</label>
                         </div>
                         <div class="col-md-7">
-                            <select class="form-select form-select-lg form-control border rounded border-primary custom-select" id="usergrp"  name="usergrp" >
+                            <select class="form-select form-select-lg form-control border rounded border-primary custom-select" id="usergrp"  name="usergrp">
                                 <option value=" " selected="">Select Group to generate QRcode</option>
                                 {% for grp in available_groups %}
-                                <option value='{{ grp.LocAppGrp_id }}'>{{ grp.LocAppGrp_name }}</option>
+                                <option value='{{ grp.LocAppGrp_code }}'>{{ grp.LocAppGrp_name }}</option>
                                 {% endfor %}
                             </select>
                         </div>
@@ -35,6 +35,9 @@
             </div>
             <div class="col-md-2"></div>
             <div class="row" id="qrcode-container"> </div>
+            <div class="text-center my-3">
+                <button class="btn btn-primary" id="print-qr-btn">Print QR Code</button>
+            </div>
         </div>
     </section>
 {% endblock %}

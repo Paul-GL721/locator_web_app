@@ -15,7 +15,7 @@
                             <li class="nav-item dropdown">
                                 <a class="dropdown-toggle nav-link fw-bold text-dark" aria-expanded="false" data-toggle="dropdown" href="#" style="padding-right: 35px;">Administrator Forms</a>
                                 <div class="dropdown-menu">
-                                    <a class="dropdown-item" href="{% url 'adduser' %}">Add a User&nbsp;</a>
+                                    <a class="dropdown-item" href="">Add a User&nbsp;</a>
                                 </div>
                             </li>
                         {% endblock %}
@@ -42,7 +42,7 @@
                     <div class="col-lg-2"> </div> 
                     <div class="col-lg-4">
                         <div class="mx-auto features-icons-item mb-5 mb-lg-0 mb-lg-3">
-                            <a href="#">
+                            <a href="{% url 'generate_qr' %}">
                                 <div class="d-flex features-icons-icon"><i class="icon-graph m-auto text-primary" data-bss-hover-animate="pulse"></i></div>
                                 <h3 data-bss-hover-animate="pulse">Print Location QR Codes</h3>
                             </a>

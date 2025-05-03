@@ -65,12 +65,12 @@ class index_page(TemplateView):
         query_params = urlencode({
             'userid': '{userid}',
             'username': '{username}',
-            'usergroup': '{usergroup}',
+            'usergroupcode': '{usergroupcode}',
             'token': '{token}',
         })
 
         # Construct shell login URL
-        login_url = f"{settings.APP_DOMAIN}/qr-login/?{query_params}"
+        login_url = f"{settings.APP_DOMAIN}/locator/qr-login/?{query_params}"
 
         # Generate QR code
         qr = qrcode.make(login_url)
@@ -191,15 +191,22 @@ class QrLoginView(View):
     """
 
     def get(self, request, *args, **kwargs):
-        userid = request.Get.get('userid')
-        token = request.Get.get('token')
+        print("Incoming GET request to qr-login")
+        print("GET data:", request.GET)
+        print("Headers:", request.headers)
+
+        userid = request.GET.get('userid')
+        token = request.GET.get('token')
+
+        print(f"Extracted userid: {userid}")
+        print(f"Extracted token: {token}")
 
         if not userid or not token:
             return HttpResponse("Missing user ID or token", status=400)
 
         try:
             user = LocAppUser.objects.get(locuser_id=userid)
-        except user.DoesNotExist:
+        except LocAppUser.DoesNotExist:
             return HttpResponse("User not found", status=404)
 
         try:
@@ -214,7 +221,8 @@ class QrLoginView(View):
         login(request, user)
 
         # Check if request is from Cordova
-        is_cordova = request.headers.get("X-Cordova-App") == "true"
+        # is_cordova = request.headers.get("X-Cordova-App") == "true"
+        is_cordova = request.META.get("HTTP_X_CORDOVA_APP") == "true"
 
         if is_cordova:
             return JsonResponse({"redirect_url": "after_login.html"})
@@ -237,13 +245,14 @@ class GenerateQRCodeView(UserDetailsMixin, View):
     def post(self, request, *args, **kwargs):
         usergroupcode = request.POST.get("usergrp")
         timestamp = int(time.time())
+        print(f"group code is {usergroupcode}")
         # Prepare placeholder query parameters
         query_params = urlencode({
             'usergroup': usergroupcode,
             'qr_timestamp': timestamp,
         })
 
-        qr_url = f"{settings.APP_DOMAIN}/generatepositonqr/?{query_params}"
+        qr_url = f"{settings.APP_DOMAIN}/locator/generatepositonqr/?{query_params}"
 
         # Generate QR code
         qr = qrcode.make(qr_url)
@@ -252,12 +261,9 @@ class GenerateQRCodeView(UserDetailsMixin, View):
         img_base64 = base64.b64encode(buffer.getvalue()).decode()
         qr_image_data = f"data:image/png;base64,{img_base64}"
 
-        # Now render a partial HTML
-        html = render_to_string('gps_qrcode_partial.html', {
-            'qr_image_data': qr_image_data,
-        })
-
-        return JsonResponse({'html': html})
+        rendered_html = render(request, 'gps_qrcode_partial.html', {
+                               'qr_image_data': qr_image_data, }).content.decode('utf-8')
+        return JsonResponse({'html': rendered_html}, status=200)
 
 
 class mobile_add_newgpsdata(APIView):
