@@ -190,7 +190,7 @@ AUTH_USER_MODEL = "locator.LocAppUser"
 # CORS_ALLOWED_ORIGINS = []
 CORS_ALLOW_ALL_ORIGINS = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-CORS_ALLOW_HEADERS = ['X-Cordova-App']
+CORS_ALLOW_HEADERS = ['X-Cordova-App', 'content-type']
 
 # CORS_ALLOWED_ORIGINS = [
 #     "http://localhost:8000",

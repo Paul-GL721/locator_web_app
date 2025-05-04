@@ -20,7 +20,8 @@ urlpatterns = [
 
 
     # mobile urls
-    # path('mobile/newgpsdata/', mobile_add_newgpsdata.as_view(),name='add_newgpsdata'),
+    path('mobile/newgpsdata/', mobile_add_newgpsdata.as_view(),
+         name='add_newgpsdata'),
 
 
     # mobile authentication

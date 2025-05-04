@@ -12,6 +12,7 @@ from django.http import JsonResponse
 from django.contrib.auth import login
 from django.utils.http import urlencode
 import time
+import datetime
 from django.views import View
 from django.views.generic.base import TemplateView
 from django.shortcuts import redirect
@@ -53,8 +54,8 @@ class UserDetailsMixin:
 
 class index_page(TemplateView):
     """
-    Display the indexpage/ landing page, with a QRcode that will allow the user 
-    to login from their mobile application 
+    Display the indexpage/ landing page, with a QRcode that will allow the user
+    to login from their mobile application
     """
     template_name = "indexpage.html"
 
@@ -266,6 +267,25 @@ class GenerateQRCodeView(UserDetailsMixin, View):
         return JsonResponse({'html': rendered_html}, status=200)
 
 
+def convert_timestamp_to_fields(timestamp_ms, created_at=None):
+    # covert timestamp to seconds from millseconds
+    dt = datetime.datetime.fromtimestamp(timestamp_ms / 1000.0)
+    # Extract date and time
+    date_part = dt.date()
+    time_part = dt.time()
+
+    # remove the z from created at
+    if created_at:
+        try:
+            offline_captured = datetime.datetime.fromisoformat(
+                created_at.replace("z", "+00.00"))
+        except Exception:
+            offline_captured = dt
+    else:
+        offline_captured = dt
+    return date_part, time_part, offline_captured
+
+
 class mobile_add_newgpsdata(APIView):
     """
     An api to add gps position data from mobile device local storage to the
@@ -273,11 +293,56 @@ class mobile_add_newgpsdata(APIView):
     """
 
     def post(self, request, format=None):
-        serializer = LocAppPositionsSerializer(data=request.data)
+        raw_data = request.data
+        print(raw_data)
+
+        if not isinstance(raw_data, list):
+            return Response({'error': 'Expected a list of objects'}, status=status.HTTP_400_BAD_REQUEST)
+
+        transformed_data = []
+
+        for item in raw_data:
+            try:
+                timestamp = item["timestamp"]
+                created_at = item.get("created_at")
+                date_part, time_part, offline_captured = convert_timestamp_to_fields(
+                    timestamp, created_at)
+
+                # lookup groupid
+                group_code = item.get('groupcode')
+                try:
+                    group = LocAppGroups.objects.get(LocAppGrp_code=group_code)
+                    group_id = group.LocAppGrp_id
+                except LocAppGroups.DoesNotExist:
+                    return Response({'error': f'Group with code {group_code} not found.'}, status=status.HTTP_400_BAD_REQUEST)
+
+                # mapping frontend keys to backend field names
+                transformed_items = {
+                    "LocAppPos_Date": date_part,
+                    "LocAppPos_user": item['userid'],
+                    "LocAppPos_user_group": group_id,
+                    "LocAppPos_timestamp": time_part,
+                    "LocAppPos_latitude": item['latitude'],
+                    "LocAppPos_longitude": item['longitude'],
+                    "LocAppPos_accuracy": item['Accuracy'],
+                    "offline_Captured_on": offline_captured,
+                    "offline_pkid": item.get('pid'),
+                }
+                transformed_data.append(transformed_items)
+            except KeyError as e:
+                return Response({'error': f'Missing field: {e}'}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = LocAppPositionsSerializer(
+            data=transformed_data, many=True)
+
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            synced_ids = [entry.get(
+                "offline_pkid") for entry in transformed_data if entry.get("offline_pkid")]
+            return Response({"message": "Data synced successfully", "synced_ids": synced_ids}, status=status.HTTP_201_CREATED)
+        else:
+            print("Serializer errors:", serializer.errors)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class CustomAuthToken(ObtainAuthToken):
