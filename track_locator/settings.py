@@ -184,7 +184,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = "locator.LocAppUser"
 
 # Redirect to home URL after login
-# LOGIN_REDIRECT_URL = 'after_login'
+LOGIN_REDIRECT_URL = 'after_login'
 
 # allow cross-origin resource sharing
 # CORS_ALLOWED_ORIGINS = []

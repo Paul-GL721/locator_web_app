@@ -103,7 +103,7 @@ class UsernamePasswdLogin(TemplateView):
     """
     Show a template that allows a user to login with a username and password
     """
-    template_name = "registration/login.html"
+    template_name = "authentication/login.html"
 
 
 @method_decorator(csrf_exempt, name='dispatch')
