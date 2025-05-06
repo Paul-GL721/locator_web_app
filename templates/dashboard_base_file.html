@@ -1,0 +1,30 @@
+
+{% extends "base_file.html" %}
+
+{% block title %}<title>Dashboard</title> {% endblock %}
+
+{% block header %} {% endblock %}
+{% block extra_css%}  {% endblock %}
+
+<!-- Body contents contents -->
+{% block content %}
+    <div class="wrapper">
+        <div class="row">
+            {% block sidebar%}     {% endblock %}
+            <div id="content">
+                {% block navigationbar %}    {% endblock %}
+
+                {% block chart %}
+                    <section>
+                        {% block chartheader %}<!--Insert Chart header content-->{% endblock %}
+                        {% block chartcontent %}<!--Insert Chart content-->{% endblock %}                      
+                    </section>
+                {% endblock %}                
+            </div>
+        </div> 
+    </div>   
+{% endblock %}
+
+<!-- Footer contents -->
+{% block footer %} {% endblock %}
+{% block extra_javascript%}  {% endblock %}

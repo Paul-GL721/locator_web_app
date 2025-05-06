@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 from .models import *
 from .serializers import *
 from django.http import Http404
@@ -9,11 +9,15 @@ from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.permissions import IsAuthenticated
 from django.http import JsonResponse
+from django.db.models import F, Max, Value
+from django.db.models.functions import Concat
+from django.db.models import CharField
 from django.contrib.auth import login
 from django.utils.http import urlencode
 import time
 import datetime
 from django.views import View
+from django.views.generic import ListView
 from django.views.generic.base import TemplateView
 from django.shortcuts import redirect
 from django.http import HttpResponse
@@ -50,6 +54,28 @@ class UserDetailsMixin:
         context = super().get_context_data(**kwargs)
         context['user_groups'] = self.get_user_groups()
         return context
+
+
+class GetUsersinaGroupView(View):
+    '''
+    Get users that belong to a given group
+    '''
+
+    def get(self, request, *args, **kwargs):
+        grpid = request.GET.get('groupId')
+        print(f'group id is {grpid}')
+        try:
+            users = LocAppGrpStatus.objects.filter(LocAppGrp_Fkeyid__LocAppGrp_code=grpid).annotate(
+                userid=F("locuser_Fkeyid__locuser_id"), usernames=Concat(F(
+                    "locuser_Fkeyid__first_name"), Value(" "), F("locuser_Fkeyid__last_name"),
+                    output_field=CharField())).values('userid', 'usernames').order_by('userid')
+            user_list = list(users)
+            print(f'users list is {user_list}')
+            # json for the onchange event
+            return JsonResponse({'user_list': user_list})
+
+        except LocAppGrpStatus.DoesNotExist:
+            return JsonResponse({'user_list': ''}, status=404)
 
 
 class index_page(TemplateView):
@@ -229,6 +255,54 @@ class QrLoginView(View):
             return JsonResponse({"redirect_url": "after_login.html"})
         else:
             return redirect('after_login')
+
+
+class TabularPositionReport(UserDetailsMixin, ListView):
+    '''
+    Get a list of all positions of groups a user belongs to as an admin,
+    Allow a user to filter results based on group selection.
+    '''
+    model = LocAppPositions
+    template_name = 'table_report.html'
+
+    def get(self, request, *args, **kwargs):
+        # all groups where a user is an admin
+        user = self.request.user
+        # 1. Groups where the user is admin
+        admin_grps = LocAppGroups.objects.filter(
+            statusgrps__locuser_Fkeyid=user,
+            statusgrps__useradmin=True
+        ).distinct()
+
+        # 2. All users in those admin groups
+        group_users = LocAppUser.objects.filter(
+            locigroup__LocAppGrp_id__in=admin_grps.values_list(
+                'LocAppGrp_id', flat=True)
+        ).distinct()
+
+        # 3. Get the most recent date in positions table
+        latest_date = LocAppPositions.objects.aggregate(Max('LocAppPos_Date'))[
+            'LocAppPos_Date__max'] or datetime.date.today()
+
+        # 4. Filter positions: in groups where user is admin, by group users, within 30-day window
+        start_date = latest_date - datetime.timedelta(days=30)
+
+        positions = LocAppPositions.objects.filter(
+            LocAppPos_user_group__in=admin_grps,
+            LocAppPos_user__in=group_users,
+            LocAppPos_Date__range=(start_date, latest_date)
+        ).select_related('LocAppPos_user', 'LocAppPos_user_group')
+
+        return render(request, self.template_name, {
+            'available_groups': admin_grps,
+            'available_positions': positions,
+            'latest_date': latest_date,
+            'start_date': start_date,
+        })
+
+    '''def post(self, request, *args, **kwargs):
+        # when a user selects a specific group return positions that belong to that group
+        data = request.POST.get()'''
 
 
 class GenerateQRCodeView(UserDetailsMixin, View):
