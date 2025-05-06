@@ -62,15 +62,15 @@ class GetUsersinaGroupView(View):
     '''
 
     def get(self, request, *args, **kwargs):
-        grpid = request.GET.get('groupId')
-        print(f'group id is {grpid}')
+        grpid = request.GET.getlist('groupId')
+        # print(f'group id is {grpid}')
         try:
-            users = LocAppGrpStatus.objects.filter(LocAppGrp_Fkeyid__LocAppGrp_code=grpid).annotate(
+            users = LocAppGrpStatus.objects.filter(LocAppGrp_Fkeyid__LocAppGrp_code__in=grpid).annotate(
                 userid=F("locuser_Fkeyid__locuser_id"), usernames=Concat(F(
                     "locuser_Fkeyid__first_name"), Value(" "), F("locuser_Fkeyid__last_name"),
                     output_field=CharField())).values('userid', 'usernames').order_by('userid')
             user_list = list(users)
-            print(f'users list is {user_list}')
+            # print(f'users list is {user_list}')
             # json for the onchange event
             return JsonResponse({'user_list': user_list})
 

@@ -1,4 +1,7 @@
 $(document).ready(function() {
+    //allow multiple selections
+    $('.multiselect').select2();
+
     //Generate a qr code which when scanned by a user will generate latitude and longititude
     var usersgrps = $('#usergrp')
     usersgrps.change(function() {
@@ -81,16 +84,17 @@ $(document).ready(function() {
         const userField = $(`#${userId}`); 
         fullurl = $('#CreateTabularReport').attr('data-url');
 
-        if (groupId) {
+        if (groupId && groupId.length > 0) {
             $.ajax({
                 url: fullurl,
                 data: {
                     groupId: groupId,
                 },
+                traditional: true,
                 dataType: 'json',
                 success: function (data) {
                     userField.empty(); // Clear current options
-                    userField.append('<option value="ALL">All Users</option>'); // Add placeholder
+                    //userField.append('<option value="ALL">All Users</option>'); // Add placeholder
                     const selectData = data.user_list;
 
                     // Add options dynamically
