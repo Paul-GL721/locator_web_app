@@ -11,43 +11,45 @@
         </form>
     {% endblock %}
 
-    {% block chartcontent %}
-        <div id="ajaxtable">       
-            <div class="table-responsive">
-                <table class="table table-striped table-bordered" id="reporttable" data-toggle="table" data-show-export="true" data-show-print="true"  
-                data-pagination="true" data-page-list="[10, 25, 50, 100, ALL]" data-smart-display="true" data-sort-order="asc" 
-                data-search="true" data-show-refresh="true" data-sortable="true" data-sticky-header="true">
-                    <thead>
+    {% block chartcontent %}     
+        <div class="table-responsive">
+            <table id="ajaxtables" class="table table-striped table-bordered" id="reporttable" data-toggle="table" data-show-export="true" data-show-print="true"  
+            data-pagination="true" data-page-list="[10, 25, 50, 100, ALL]" data-smart-display="true" data-sort-order="asc" 
+            data-search="true" data-show-refresh="true" data-sortable="true" data-sticky-header="true">
+                <thead>
+                    <tr>
+                        <th id="report-title" class="Theading text-center fw-bold fs-5" colspan="6">
+                            User Position Tracking Report<br>
+                            <span class="fw-normal">for {{ groupname }}</span><br>
+                            <span class="fw-light">From {{ start_date }} to {{ end_date }}</span>
+                        </th>
+                    </tr>
+                    <tr>
+                        <th data-field="date" data-sortable="true" data-order="true" data-searchable="true">Date</th>
+                        <th data-field="user" data-sortable="true" data-order="true">User</th>
+                        <th data-field="time" data-sortable="true" data-order="true">Time</th>
+                        <th data-field="lat" data-sortable="true" data-order="true">Latitude</th>
+                        <th data-field="long" data-sortable="true" data-order="true">Longitude</th>
+                        <th data-field="accu" data-sortable="true" data-order="true">Accuracy(m)</th>
+                    </tr>
+                </thead>
+                <tbody id="ajaxtable">
+                    {% for det in available_positions %}
                         <tr>
-                            <th class="Theading text-center fw-normal fs-4" colspan="6">Table Report For <br> for the Month of <br> {{ propname }} {{ propaddress }}</th>
+                            <td>{{ det.LocAppPos_Date|date:"d/m/Y" }}</td>  
+                            <td>{{ det.LocAppPos_user }}</td>  
+                            <td>{{ det.LocAppPos_timestamp|date:"H:i" }}</td> 
+                            <td>{{ det.LocAppPos_latitude }}</td>  
+                            <td>{{ det.LocAppPos_longitude }}</td>  
+                            <td>{{ det.LocAppPos_accuracy }}</td>  
                         </tr>
+                    {% empty %}
                         <tr>
-                            <th data-field="date" data-sortable="true" data-order="true" data-searchable="true">Date</th>
-                            <th data-field="user" data-sortable="true" data-order="true">User</th>
-                            <th data-field="time" data-sortable="true" data-order="true">Time</th>
-                            <th data-field="lat" data-sortable="true" data-order="true">Latitude</th>
-                            <th data-field="long" data-sortable="true" data-order="true">Longitude</th>
-                            <th data-field="accu" data-sortable="true" data-order="true">Accuracy(m)</th>
+                            <td colspan="6" class="text-center">No positions available for the selected date range.</td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        {% for det in available_positions %}
-                            <tr>
-                                <td>{{ det.LocAppPos_Date|date:"d/m/Y" }}</td>  
-                                <td>{{ det.LocAppPos_user }}</td>  
-                                <td>{{ det.LocAppPos_timestamp|date:"H:i" }}</td> 
-                                <td>{{ det.LocAppPos_latitude }}</td>  
-                                <td>{{ det.LocAppPos_longitude }}</td>  
-                                <td>{{ det.LocAppPos_accuracy }}</td>  
-                            </tr>
-                        {% empty %}
-                            <tr>
-                                <td colspan="6" class="text-center">No positions available for the selected date range.</td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     {% endblock %}
 </section>

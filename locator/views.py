@@ -296,13 +296,56 @@ class TabularPositionReport(UserDetailsMixin, ListView):
         return render(request, self.template_name, {
             'available_groups': admin_grps,
             'available_positions': positions,
-            'latest_date': latest_date,
+            'end_date': latest_date,
             'start_date': start_date,
+            'groupname': 'All Groups'
         })
 
-    '''def post(self, request, *args, **kwargs):
-        # when a user selects a specific group return positions that belong to that group
-        data = request.POST.get()'''
+    def post(self, request, *args, **kwargs):
+        group_ids = request.POST.getlist('groupIds')
+        user_ids = request.POST.getlist('userIds')
+        start_date = request.POST.get('fromDate')
+        latest_date = request.POST.get('toDate')
+
+        # Parse start date
+        try:
+            start_date = datetime.datetime.strptime(
+                start_date, "%Y-%m-%d").date()
+        except (ValueError, TypeError):
+            return JsonResponse({'error': 'Invalid start date format'}, status=400)
+
+        # Parse end date (fallback to today or 30 days after start)
+        try:
+            latest_date = datetime.datetime.strptime(
+                latest_date, "%Y-%m-%d").date()
+        except (ValueError, TypeError):
+            latest_date = start_date + datetime.timedelta(days=30)  # fallback
+
+        # print(f'submitted data are {group_ids} {user_ids} {start_date} {latest_date}')
+
+        positions = LocAppPositions.objects.filter(
+            LocAppPos_user_group__LocAppGrp_code__in=group_ids,
+            LocAppPos_user__locuser_id__in=user_ids,
+            LocAppPos_Date__range=(start_date, latest_date)
+        ).select_related('LocAppPos_user', 'LocAppPos_user_group')
+
+        # Get group names for display
+        groupname_qs = LocAppGroups.objects.filter(
+            LocAppGrp_code__in=group_ids)
+        groupname = ", ".join(
+            group.LocAppGrp_name for group in groupname_qs) if groupname_qs.exists() else "Selected Groups"
+
+        # print(f'data on post event {groupname} {positions} {start_date} {latest_date}')
+
+        return JsonResponse({
+            'table_html': render_to_string('partial_position_table.html', {
+                'available_positions': positions,
+                'groupname': groupname,
+                'start_date': start_date,
+                'end_date': latest_date,
+            }),
+
+        })
 
 
 class GenerateQRCodeView(UserDetailsMixin, View):

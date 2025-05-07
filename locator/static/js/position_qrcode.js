@@ -117,5 +117,44 @@ $(document).ready(function() {
             userField.prop('disabled', true);
         }
     }
+
+    /* Post data when the user changes select or data inputs */
+    function loadPositionTable() {
+        const groupIds = $('#reportusergrp').val() || [];
+        const userIds = $('#reportusersingrp').val() || [];
+        const fromDate = $('#datepicker1').val();
+        const toDate = $('#datepicker2').val();
+    
+        $.ajax({
+            url: $('#CreateTabularReport').attr('action'),
+            type: 'POST',
+            data: {
+                groupIds: groupIds,
+                userIds: userIds,
+                fromDate: fromDate,
+                toDate: toDate,
+                csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val()
+            },
+            traditional: true,
+            success: function(response) {
+                $('#ajaxtables').html(response.table_html);
+                // Re-initialize the Bootstrap Table plugin
+                $('#ajaxtables table').bootstrapTable();
+                /*$('#report-title').html(
+                    `User Position Tracking Report<br>
+                    <span class="fw-normal">for ${response.groupname}</span><br>
+                    <span class="fw-light">From ${response.start} to ${response.end}</span>`
+                );*/
+            },
+            error: function() {
+                alert('Failed to load table.');
+            }
+        });
+    }
+    
+    // Attach change listeners
+    $('#reportusergrp, #reportusersingrp, #datepicker1, #datepicker2').on('change', function () {
+        loadPositionTable();
+    });    
     
 });
