@@ -28,7 +28,7 @@ configmapRef:
   SQL_ENGINE: "django.db.backends.postgresql"
   SQL_DATABASE: "locatorappdb"
   SQL_USER: "locatoruser"
-  SQL_HOST: "postgresqldb.databases.svc.cluster.local"
+  SQL_HOST: "postgresqldb-ha.paulgobero.com"
   SQL_PORT: "5432"
 
 secretRef:
