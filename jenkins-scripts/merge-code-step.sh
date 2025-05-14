@@ -34,7 +34,9 @@ done
 
 
 # Checkout additional necessary files
-git checkout origin/development $BASE_DIRECTORY/track_locator $BASE_DIRECTORY/.gitignore $BASE_DIRECTORY/Jenkinsfile $BASE_DIRECTORY/manage.py $BASE_DIRECTORY/Pipfile $BASE_DIRECTORY/Pipfile.lock $BASE_DIRECTORY/README.md $BASE_DIRECTORY/templates/* $BASE_DIRECTORY/static/*
+git checkout origin/development $BASE_DIRECTORY/track_locator $BASE_DIRECTORY/.gitignore\
+ $BASE_DIRECTORY/Jenkinsfile $BASE_DIRECTORY/manage.py $BASE_DIRECTORY/Pipfile $BASE_DIRECTORY/Pipfile.lock\
+ $BASE_DIRECTORY/README.md $BASE_DIRECTORY/templates $BASE_DIRECTORY/static
 
 git status
 #git remote -v 
