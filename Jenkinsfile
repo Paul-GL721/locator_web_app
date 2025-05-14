@@ -287,7 +287,7 @@ pipeline {
 				K8S_RELEASE_NAME = 'locatorapp'
 				K8S_NAMESPACE = 'locator-app'
 				K8S_APPSECRET_YAML = credentials('k8s_locatorappsecrets_yaml')
-				K8S_DJANGO_APPSECRET_YAML==credentials('k8s_locatorapp-djangosecrets_yaml')
+				K8S_DJANGO_APPSECRET_YAML = credentials('k8s_locatorapp-djangosecrets_yaml')
 			}
 			
 			// Execute if it's the main branch
