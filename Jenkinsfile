@@ -12,22 +12,22 @@ pipeline {
 		VERSION="0.1.${BUILD_NUMBER}"
 		BASE_DIRECTORY='Backend/track_locator'
 		REMOTE_USER='k8sdeployuser'
-		REMOTE_DIR='STAGING_BACKEND_LOCATOR'
+		REMOTE_DIR='STAGING_BACKEND_LOCATORAPP'
 		REMOTE_FOLDER='Backend/track_locator'
 		REMOTE_REPO_NAME='staging_backend_locator'
+		DOCKER_ACCOUNT='paulgl721'
 		K8S_DEPLOYMENT_FOLDER='z_k8s_deployment'
 		K8S_HELM_CHARTS_FOLDER='helm_charts'
-		K8S_HELM_CHART_TYPE_FOLDER='staging-locator'
-		K8S_RELEASE_NAME='locator-staging'
+		K8S_HELM_CHART_TYPE_FOLDER='staging-locatorapp'
+		K8S_RELEASE_NAME='locatorapp-staging'
 		K8S_NAMESPACE='locator-app-staging'
 		GIT_REPO='git@github.com:Paul-GL721/locator.git'
 		GH_TOKENCRED=credentials('jenkins-post-pr-portfolio')
-		DOCKER_ACCOUNT='paulgl721'
-        REMOTE_HOST=credentials('aws-host')
-        AWSACCOUNT=credentials('aws-account-number')
-		K8S_CRONJOBSECRET_KEYID=credentials('k8s_cronjobsecrets_keyid')
-		K8S_CRONJOBSECRET_SECRET_KEY=credentials('k8s_cronjobsecrets_secretkey')
-		K8S_APPSECRET_YAML=credentials('k8s_appsecrets_stage_yaml')
+		ANSIBLE_HOST=credentials('locapp-ansible-host')
+		ANSIBLE_USER=credentials('locapp-ansible-user')
+		ANSIBLE_PRIVATE_KEY_PATH=credentials('locapp-ansible-privatekey')
+		K8S_APPSECRET_YAML=credentials('k8s_locatorappsecrets_stage_yaml')
+		K8S_DJANGO_APPSECRET_YAML=credentials('k8s_locatorapp-djangosecrets_stage_yaml')
 		EMAIL_TO='team@paulgobero.com'
 	}
 
@@ -59,7 +59,7 @@ pipeline {
 				echo '..................Merging if anyfiles have changed................'
 				
 				//with github credentials stored in jenkins server
-				sshagent (credentials: ['estates-app-jenkins-to-github']) {
+				sshagent (credentials: ['locator-app-jenkins-to-github']) {
 					script {
 						//make the merge script executable
 						sh 'chmod +x ./${BASE_DIRECTORY}/jenkins-scripts/merge-code-step.sh'
@@ -126,11 +126,11 @@ pipeline {
 					//run ansible-playbook
 					sh """
 						ansible-playbook ./${BASE_DIRECTORY}/ansible/staging-playbook.yml \
-						-i ./${BASE_DIRECTORY}/ansible/inventory.ini \
+						-i ./${BASE_DIRECTORY}/ansible/staging.ini \
 						--extra-vars="REMOTE_USER=${env.REMOTE_USER} \
 						GIT_REPO=${env.GIT_REPO} \
 						VERSION=${env.VERSION} \
-						AWSACCOUNT=${env.AWSACCOUNT} \
+						DOCKER_ACCOUNT=${env.DOCKER_ACCOUNT} \
 						REMOTE_HOST=${env.REMOTE_HOST} \
 						REMOTE_DIR=${env.REMOTE_DIR} \
 						REMOTE_FOLDER=${env.REMOTE_FOLDER} \
@@ -139,8 +139,10 @@ pipeline {
 						K8S_HELM_CHARTS_FOLDER=${env.K8S_HELM_CHARTS_FOLDER} \
 						K8S_HELM_CHART_TYPE_FOLDER=${env.K8S_HELM_CHART_TYPE_FOLDER} \
 						K8S_RELEASE_NAME=${env.K8S_RELEASE_NAME} \
-						K8S_CRONJOBSECRET_KEYID=${env.K8S_CRONJOBSECRET_KEYID} \
-						K8S_CRONJOBSECRET_SECRET_KEY=${env.K8S_CRONJOBSECRET_SECRET_KEY} \
+						ANSIBLE_HOST=${env.ANSIBLE_HOST} \
+						ANSIBLE_USER=${env.ANSIBLE_USER} \
+						ANSIBLE_PRIVATE_KEY_PATH=${env.ANSIBLE_PRIVATE_KEY_PATH} \
+						K8S_DJANGO_APPSECRET_YAML=${env.K8S_DJANGO_APPSECRET_YAML} \
 						K8S_APPSECRET_YAML=${env.K8S_APPSECRET_YAML} \
 						K8S_NAMESPACE=${env.K8S_NAMESPACE}" \
 						-vvv
@@ -174,7 +176,7 @@ pipeline {
 			}
 			steps {
 				//Use github credentials stored in jenkins server
-				sshagent (credentials: ['estates-app-jenkins-to-github']) {
+				sshagent (credentials: ['locator-app-jenkins-to-github']) {
 					script {
 						echo '..............Creating temporary pull request branch................'
 						//make the script executable
@@ -216,7 +218,7 @@ pipeline {
 			}
 			steps {
 				//with github credentials stored in jenkins server
-				sshagent (credentials: ['estates-app-jenkins-to-github']) {
+				sshagent (credentials: ['locator-app-jenkins-to-github']) {
 					script {
 						echo '..............Creating temporary pull request branch................'
 						echo 'Creating temp branch'
@@ -231,7 +233,7 @@ pipeline {
 			}
 		}
 
-		stage('8. Create pull request from production to master branch') {
+		stage('8. Create pull request from production to main branch') {
 			//Execute if its the production branch
 			when {
 				branch 'production'
@@ -247,8 +249,8 @@ pipeline {
 					sh 'echo \$GH_TOKENCRED_PSW|gh auth login --hostname github.com --with-token'
 					//sh 'echo $GH_TOKENCRED_PSW | gh auth login --hostname github.com --with-token'
 					sh 'gh auth status'					
-					echo '.............Creating pull request on master branch..........'
-					sh 'gh pr create --title "Production branch v$VERSION was successful" --body "Production branch version$VERSION was successfully tested and deployed; needs to be merged into master" --base master --head tmpproductionV$VERSION'					
+					echo '.............Creating pull request on main branch..........'
+					sh 'gh pr create --title "Production branch v$VERSION was successful" --body "Production branch version$VERSION was successfully tested and deployed; needs to be merged into main" --base main --head tmpproductionV$VERSION'					
 					sh 'gh auth logout --hostname github.com'
 				}				
 			}
@@ -279,12 +281,13 @@ pipeline {
 		stage('10. Deploy to production EC2 instance') {
 			// Define environment variables
 			environment {
-				REMOTE_DIR = 'APMSYSTEM'
-				REMOTE_REPO_NAME = 'apmsystem'
-				K8S_HELM_CHART_TYPE_FOLDER = 'estatesapp'
-				K8S_RELEASE_NAME = 'estatesapp'
-				K8S_NAMESPACE = 'estates-app'
-				K8S_APPSECRET_YAML = credentials('k8s_appsecrets_yaml')
+				REMOTE_DIR = 'PRODUCTION_BACKEND_LOCATORAPP'
+				REMOTE_REPO_NAME = 'locatorapp'
+				K8S_HELM_CHART_TYPE_FOLDER = 'locatorapp'
+				K8S_RELEASE_NAME = 'locatorapp'
+				K8S_NAMESPACE = 'locator-app'
+				K8S_APPSECRET_YAML = credentials('k8s_locatorappsecrets_yaml')
+				K8S_DJANGO_APPSECRET_YAML = credentials('k8s_locatorapp-djangosecrets_yaml')
 			}
 			
 			// Execute if it's the main branch
@@ -302,12 +305,12 @@ pipeline {
 				script {
 					// Run production ansible-playbook
 					sh """
-						ansible-playbook ./${BASE_DIRECTORY}/ansible/apmsystem-playbook.yml \
-						-i ./${BASE_DIRECTORY}/ansible/inventory.ini \
+						ansible-playbook ./${BASE_DIRECTORY}/ansible/production-playbook.yml \
+						-i ./${BASE_DIRECTORY}/ansible/production.ini \
 						--extra-vars="REMOTE_USER=${env.REMOTE_USER} \
 						GIT_REPO=${env.GIT_REPO} \
 						VERSION=${env.VERSION} \
-						AWSACCOUNT=${env.AWSACCOUNT} \
+						DOCKER_ACCOUNT=${env.DOCKER_ACCOUNT} \
 						REMOTE_HOST=${env.REMOTE_HOST} \
 						REMOTE_DIR=${env.REMOTE_DIR} \
 						REMOTE_FOLDER=${env.REMOTE_FOLDER} \
@@ -316,8 +319,10 @@ pipeline {
 						K8S_HELM_CHARTS_FOLDER=${env.K8S_HELM_CHARTS_FOLDER} \
 						K8S_HELM_CHART_TYPE_FOLDER=${env.K8S_HELM_CHART_TYPE_FOLDER} \
 						K8S_RELEASE_NAME=${env.K8S_RELEASE_NAME} \
-						K8S_CRONJOBSECRET_KEYID=${env.K8S_CRONJOBSECRET_KEYID} \
-						K8S_CRONJOBSECRET_SECRET_KEY=${env.K8S_CRONJOBSECRET_SECRET_KEY} \
+						ANSIBLE_HOST=${env.ANSIBLE_HOST} \
+						ANSIBLE_USER=${env.ANSIBLE_USER} \
+						ANSIBLE_PRIVATE_KEY_PATH=${env.ANSIBLE_PRIVATE_KEY_PATH} \
+						K8S_DJANGO_APPSECRET_YAML=${env.K8S_DJANGO_APPSECRET_YAML} \
 						K8S_APPSECRET_YAML=${env.K8S_APPSECRET_YAML} \
 						K8S_NAMESPACE=${env.K8S_NAMESPACE}" \
 						-vvv
