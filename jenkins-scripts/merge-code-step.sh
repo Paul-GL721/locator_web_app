@@ -32,7 +32,31 @@ done
 
 
 # Checkout additional necessary files
-git checkout origin/development $BASE_DIRECTORY/track_locator $BASE_DIRECTORY/.gitignore $BASE_DIRECTORY/Jenkinsfile $BASE_DIRECTORY/manage.py $BASE_DIRECTORY/Pipfile $BASE_DIRECTORY/Pipfile.lock $BASE_DIRECTORY/README.md $BASE_DIRECTORY/templates $BASE_DIRECTORY/static
+#git checkout origin/development $BASE_DIRECTORY/track_locator $BASE_DIRECTORY/.gitignore $BASE_DIRECTORY/Jenkinsfile $BASE_DIRECTORY/manage.py $BASE_DIRECTORY/Pipfile $BASE_DIRECTORY/Pipfile.lock $BASE_DIRECTORY/README.md $BASE_DIRECTORY/templates $BASE_DIRECTORY/static
 
-git status
+#git status
 #git remote -v 
+
+# Define list of files and directories to checkout
+FILES_AND_DIRS=(
+  "$BASE_DIRECTORY/track_locator"
+  "$BASE_DIRECTORY/.gitignore"
+  "$BASE_DIRECTORY/Jenkinsfile"
+  "$BASE_DIRECTORY/manage.py"
+  "$BASE_DIRECTORY/Pipfile"
+  "$BASE_DIRECTORY/Pipfile.lock"
+  "$BASE_DIRECTORY/README.md"
+  "$BASE_DIRECTORY/templates"
+  "$BASE_DIRECTORY/static"
+)
+
+# Loop through each path and check if it exists in the development branch
+for path in "${FILES_AND_DIRS[@]}"; do
+  # Check if the path exists in origin/development
+  if git ls-tree -r origin/development --name-only | grep -q "^${path#"$BASE_DIRECTORY/"}$"; then
+    echo "Checking out: $path"
+    git checkout origin/development "$path"
+  else
+    echo "Skipping: $path (not found in origin/development)"
+  fi
+done
