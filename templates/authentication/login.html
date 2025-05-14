@@ -1,0 +1,59 @@
+{% extends "base_file.html" %}
+
+{% block title %}<title>paswd login</title> {% endblock %}
+{% block header %} {% endblock %}
+{% load static %}
+<!-- Body contents contents -->
+{% block content %}
+	{% if form.errors %}
+		<p>Your username and password didn't match. Please try again.</p>
+	{% endif %}
+	
+	{% if next %}
+		{% if user.is_authenticated %}
+			<p>Your account doesn't have access to this page. To proceed,
+		    please login with an account that has access.</p>
+	    {% else %}
+		    <p>Please login to see this page.</p>
+	    {% endif %}
+	{% endif %}
+
+	<section class="py-4 py-xl-5">
+        <div class="container">
+            <div class="row d-flex justify-content-center">
+                <div class="col-md-6 col-xl-4">
+                    <div class="card border-light">
+                        <div class="card-body fw-bolder text-center text-muted d-flex flex-column align-items-center">
+                            <div class="bs-icon-xl bs-icon-circle bs-icon-primary bs-icon my-4">
+                                <img class="rounded-circle img-fluid" src="{% static 'images/login/login_image.png' %}" width="150px" height="150px" loading="auto">
+                            </div>
+                            <form method="post" action="{% url 'login' %}">
+								{% csrf_token %}
+                                <div class="mb-3">
+                                    <input type="hidden" name="next" value="{{ request.GET.next }}">
+                                    <input class="form-control" type="text" name="username" placeholder="Username">
+                                </div>
+                                <div class="mb-3">
+                                    <input class="form-control" type="password" name="password" placeholder="Password">
+                                </div>
+                                <div class="mb-3">
+                                    <button class="btn btn-primary d-block w-100" type="submit">Log in</button>
+                                </div>
+                                <div>
+                                    <div class="row">
+                                        <div class="col-12 col-sm-12 col-md-6">
+                                            <a class="text-dark" href="">No Username yet? Sign Up Now!</a>
+                                        </div>
+                                        <div class="col-12 col-sm-12 col-md-6">
+                                            <a class="text-muted" href="{% url 'password_reset' %}">Forgot Your Password?</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}

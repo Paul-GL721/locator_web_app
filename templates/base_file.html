@@ -10,18 +10,16 @@
     {% load static %}
     <link rel="icon" type="image/png" sizes="973x695" href="{% static 'images/login/login_image.png' %}">
     <link rel="stylesheet" href="{% static 'css/Bootstrap/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/Bootstrap_Table/bootstrap-table.min.css' %}">
     <link rel="stylesheet" href="{% static 'css/general_css/Albert%20Sans.css' %}">
     <link rel="stylesheet" href="{% static 'css/general_css/Lato.css' %}">
     <link rel="stylesheet" href="{% static 'css/general_css/Noto%20Serif%20Nyiakeng%20Puachue%20Hmong.css' %}">
     <link rel="stylesheet" href="{% static 'css/general_css/Open%20Sans.css' %}">
     <link rel="stylesheet" href="{% static 'css/general_css/animate.min.css' %}">
     <link rel="stylesheet" href="{% static 'css/general_css/select2.min.css' %}">
-    <link rel="stylesheet" href="{% static 'images/fonts/fontawesome-all.min.css' %}">
-    <link rel="stylesheet" href="{% static 'images/fonts/font-awesome.min.css' %}">
-    <link rel="stylesheet" href="{% static 'images/fonts/simple-line-icons.min.' %}">
-    <link rel="stylesheet" href="{% static 'images/fonts/fontawesome5-overrides.min.css' %}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     <link rel="stylesheet" href="{% static 'css/Date_picker/boot4_datepicker.css' %}">
-    <link rel="stylesheet" href="{% static 'css/Bootstrap_Table/bootstrap-table.min.css' %}">
     <link rel="stylesheet" href="{% static 'css/Bootstrap_Table/bootstrap_table_stickyheader_extension.min.css' %}">
     <link rel="stylesheet" href="{% static 'css/sidebar/mscrollbar.css' %}">
     <link rel="stylesheet" href="{% static 'css/sidebar/sidebar_custom.css' %}">
@@ -79,10 +77,11 @@
     <script src="{% static 'js/jquery.min.js' %}"></script>
     <script src="{% static 'js/Bootstrap/bootstrap.min.js' %}"></script>
     <script src="{% static 'js/graphs/chart.min.js' %}"></script>
-    <script src="{% static 'js/Bootstrap_Table/bootstrap-table.min.js' %}"></script>
+    <script src="{% static 'js/Bootstrap_Table/export/tableExport.min.js' %}"></script>
+    <script src="{% static 'js/Bootstrap_Table/export/FileSaver.min.js' %}"></script>
+    <script src="{% static 'js/Bootstrap_Table/export/jspdf.umd.min.js' %}"></script>
+    <script src="{% static 'js/Bootstrap_Table/bootstrap-table.min.js' %}"></script> 
     <script src="{% static 'js/Date_Picker/bootstrap_datepicker.js' %}"></script>
-    <script src="{% static 'js/Bootstrap_Table/Bootstrap_Table/bootstrap-table-print-extension.min.js' %}"></script>
-    <script src="{% static 'js/Bootstrap_Table/Bootstrap_Table/bootsrap_table_stickeyheader_extension.min.js' %}"></script>
     <script src="{% static 'js/Date_Picker/dateformat.js' %}"></script>
     <script src="{% static 'js/select2.min.js' %}"></script>
     <script src="{% static 'js/jqformvalidation.min.js' %}"></script>
@@ -91,6 +90,7 @@
     <script src="{% static 'js/sidebar/sidebars.js' %}"></script>
     <script src="{% static 'js/sidebar/custom_sidebar.js' %}"></script>
     <script src="{% static 'js/sidebar/jquery.mCustomScrollbar.concat.min.js' %}"></script>
+    <script src="{% static 'js/position_qrcode.js' %}"></script>
 
     {% block extra_javascript%}  {% endblock %}
 </body>
