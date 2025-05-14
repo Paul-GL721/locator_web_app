@@ -126,7 +126,6 @@ pipeline {
 					//run ansible-playbook
 					sh """
 						ansible-playbook ./${BASE_DIRECTORY}/ansible/staging-playbook.yml \
-						-i ./${BASE_DIRECTORY}/ansible/staging.ini \
 						--extra-vars="REMOTE_USER=${env.REMOTE_USER} \
 						GIT_REPO=${env.GIT_REPO} \
 						VERSION=${env.VERSION} \
