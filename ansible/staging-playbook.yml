@@ -11,6 +11,7 @@
     - name: Display the User name
       ansible.builtin.debug:
         msg: "Hello User {{ username_on_the_host.stdout }} from Jenkins and Ansible!!"
+        
     - name: Dynamically add host to k8scluster group
       add_host:
         name: server4
