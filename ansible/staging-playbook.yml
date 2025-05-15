@@ -8,7 +8,7 @@
       become: false
       local_action: command whoami
       register: username_on_the_host
-      
+
     - name: Display the User name
       ansible.builtin.debug:
         msg: "Hello User {{ username_on_the_host.stdout }} from Jenkins and Ansible!!"
@@ -33,7 +33,6 @@
       become: true
       remote_user: "{{ REMOTE_USER }}"
       action: ping
-
     - name: Create a directory
       ansible.builtin.file:
         path: /home/{{ REMOTE_USER }}/{{ REMOTE_DIR }}
