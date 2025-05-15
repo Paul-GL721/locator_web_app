@@ -11,7 +11,7 @@
     - name: Display the User name
       ansible.builtin.debug:
         msg: "Hello User {{ username_on_the_host.stdout }} from Jenkins and Ansible!!"
-        
+
     - name: Dynamically add host to k8scluster group
       add_host:
         name: server4
@@ -72,8 +72,8 @@
             repository: "{{ DOCKER_ACCOUNT }}/{{ REMOTE_REPO_NAME }}" #repository containg the image
             tag: "V{{ VERSION }}"
           secretRef:
-            actualdbpassword: "{{ K8S_APPSECRET_YAML }}"
-            actualdjangosecretkey: "{{ K8S_DJANGO_APPSECRET_YAML }}"
+            actualdbpassword: "{{ K8S_APPSECRET_YAML | quote }}"
+            actualdjangosecretkey: "{{ K8S_DJANGO_APPSECRET_YAML | quote }}"
                     
     - name: Check if deployment pods are running
       kubernetes.core.k8s_info:
