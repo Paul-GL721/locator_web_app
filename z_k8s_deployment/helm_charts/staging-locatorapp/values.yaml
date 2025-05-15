@@ -140,7 +140,7 @@ livenessProbe:
     httpHeaders:
       - name: host
         value: staging-locator.paulgobero.com # Configure the appropriate host here (should be in the allowed host by django)
-  initialDelaySeconds: 90
+  initialDelaySeconds: 300
   timeoutSeconds: 5
 
 readinessProbe:
@@ -150,7 +150,7 @@ readinessProbe:
     httpHeaders:
     - name: Host
       value: staging-locator.paulgobero.com # Configure the appropriate host here (should be in the allowed host by django)
-  initialDelaySeconds: 90
+  initialDelaySeconds: 300
   periodSeconds: 5
 
 # This section is for setting up autoscaling more information can be found here: https://kubernetes.io/docs/concepts/workloads/autoscaling/
