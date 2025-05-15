@@ -11,6 +11,15 @@
     - name: Display the User name
       ansible.builtin.debug:
         msg: "Hello User {{ username_on_the_host.stdout }} from Jenkins and Ansible!!"
+    - name: Dynamically add host to k8scluster group
+      add_host:
+        name: server4
+        groups: k8scluster
+        ansible_host: "{{ ANSIBLE_HOST }}"
+        ansible_user: "{{ ANSIBLE_USER }}"
+        ansible_connection: ssh
+        ansible_ssh_private_key_file: "{{ ANSIBLE_PRIVATE_KEY_PATH }}"
+        ansible_python_interpreter: /usr/bin/python3
 
 #deploy to a kubernetes staging cluster
 - name: Deploy to kubernetes cluster
@@ -41,25 +50,6 @@
         force: yes
         key_file: /home/{{ REMOTE_USER }}/.ssh/ansiblegithub
 
-    - name: Create inventory.ini (Add server4 to [k8scluster])
-      community.general.ini_file:
-        path: /home/{{ REMOTE_USER }}/{{ REMOTE_DIR }}/{{ REMOTE_FOLDER }}/ansible/staging.ini
-        section: "k8scluster"
-        option: "server4"
-        value: ""
-
-    - name: Set host variables for server4
-      community.general.ini_file:
-        path: /home/{{ REMOTE_USER }}/{{ REMOTE_DIR }}/{{ REMOTE_FOLDER }}/ansible/staging.ini
-        section: "server4"
-        option: "{{ item.key }}"
-        value: "{{ item.value }}"
-      loop:
-        - { key: 'ansible_host', value: "{{ ANSIBLE_HOST }}" }
-        - { key: 'ansible_user', value: "{{ ANSIBLE_USER }}" }
-        - { key: 'ansible_connection', value: 'ssh' }
-        - { key: 'ansible_ssh_private_key_file', value: "{{ ANSIBLE_PRIVATE_KEY_PATH }}" }
-        - { key: 'ansible_python_interpreter', value: '/usr/bin/python3' }
     
     - name: Create a k8s namespace if not exists
       kubernetes.core.k8s:
