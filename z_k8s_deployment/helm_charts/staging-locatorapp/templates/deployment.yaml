@@ -44,7 +44,7 @@ spec:
           ports:
             - name: http
               containerPort: {{ .Values.service.containerPort }}
-              protocol: TCP
+              protocol: TCP 
           env:
             # SQL password pulled from Kubernetes Secret
             - name: {{ .Values.secretRef.dbenvSecretkey }}
@@ -99,9 +99,15 @@ spec:
       - name: {{ .Release.Name }}-configmap
         configMap:
           name: {{ .Release.Name }}-configmap
-      - name: {{ .Values.secretRef.dbexistingSecretname }}
+      {{- if .Values.secretRef.existingsecret.existingdbsecret }}
+      - name: {{ .Values.secretRef.existingsecret.dbexistingSecretname }}
         secret:
-          secretName: {{ .Values.secretRef.dbexistingSecretname }}
+          secretName: {{ .Values.secretRef.existingsecret.dbexistingSecretname }}
+      {{- else }}
+      - name: {{ .Values.secretRef.secretnametocreate }}
+        secret:
+          secretName: {{ .Values.secretRef.secretnametocreate }}
+      {{- end }}
       - name: {{ .Release.Name }}-staticfiles
         persistentVolumeClaim:
           claimName: {{ .Values.volumes.pvcStaticfiles.existingpvclaimName }}
