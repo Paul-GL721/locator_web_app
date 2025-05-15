@@ -39,7 +39,7 @@ pipeline {
 			}
 			//use jenkins testing node
 			agent {
-				label 'testnode'
+				label 'buildnode'
 			}
 			steps {
                 echo '..................Testing Code Pushed development................'
