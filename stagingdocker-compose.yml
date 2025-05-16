@@ -16,7 +16,7 @@ services:
       - source: staging_config
         target: /run/configs/django_config.json
     networks: #networks to db and reverse proxy
-      - ha-pgpoolbridge-network
+      - hapostgresql_ha-pgpoolbridge-network
       - traefik_proxy-network
     deploy: #using swarm to scale the service
       mode: replicated
@@ -47,7 +47,7 @@ services:
 
 #Communication networks between the containers
 networks:
-  ha-pgpoolbridge-network:
+  hapostgresql_ha-pgpoolbridge-network:
     external: true
   traefik_proxy-network:
     external: true
