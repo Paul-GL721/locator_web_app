@@ -165,6 +165,12 @@
             data_is_b64: true
             state: present
             force: true
+        
+        - name: Ensure jsondiff is installed on remote host
+          become: true
+          ansible.builtin.pip:
+            name: jsondiff
+            executable: pip3
 
         - name: Deploy stack using docker-compose
           become: true
