@@ -6,9 +6,6 @@ FROM ubuntu:22.04
 ENV PYTHONUNBUFFERED 1
 ENV PIPENV_VENV_IN_PROJECT=1
 
-# Set correct Python path based on mounted directories
-#ENV PYTHONPATH="/code/workdir:/code/workdir/apmsystem:/usr/local/lib/python3.10/site-packages"
-
 # Maintainer information
 LABEL maintainer="Paul GL <lwangapaul23@gmail.com>"
 
