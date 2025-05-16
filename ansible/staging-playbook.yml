@@ -166,6 +166,14 @@
             state: present
             force: true
         
+        - name: Replace full image string in docker-compose.yml
+          become: true
+          ansible.builtin.shell: |
+            sed -i 's|remotestorage/remoterepo:tag|{{ DOCKER_ACCOUNT }}/{{ REMOTE_REPO_NAME }}:V{{ VERSION }}|g' /home/{{ REMOTE_USER }}/{{ REMOTE_DIR }}/{{ REMOTE_FOLDER }}/stagingdocker-compose.yml
+          args:
+            executable: /bin/bash
+
+        
         - name: Ensure jsondiff is installed on remote host
           become: true
           ansible.builtin.pip:
@@ -181,5 +189,5 @@
               - /home/{{ SWARM_REMOTE_USER }}/{{ REMOTE_DIR }}/{{ REMOTE_FOLDER }}/stagingdocker-compose.yml
               - version: '3.8'
                 services:
-                  stageapp:
+                  stagelocapp:
                     image: "{{ DOCKER_ACCOUNT }}/{{ REMOTE_REPO_NAME }}:V{{ VERSION }}"
