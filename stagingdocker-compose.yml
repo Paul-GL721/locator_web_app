@@ -26,11 +26,11 @@ services:
           - node.role==worker
       labels: #generate configurations for the reverse proxy
         - "traefik.enable=true" # Enable the service
-        - "traefik.http.routers.stageapp.rule=Host(`staging-locator.paulgobero.com`)"
-        - "traefik.http.services.stageapp-service.loadbalancer.server.port=8000"
-        - "traefik.http.routers.stageapp.entrypoints=web,websecure"
-        - "traefik.http.routers.stageapp.tls=true" #enable tls
-        - "traefik.http.routers.stageapp.tls.certresolver=production" #certificate
+        - "traefik.http.routers.stagelocapp.rule=Host(`staging-locator.paulgobero.com`)"
+        - "traefik.http.services.stagelocapp-service.loadbalancer.server.port=8000"
+        - "traefik.http.routers.stagelocapp.entrypoints=web,websecure"
+        - "traefik.http.routers.stagelocapp.tls=true" #enable tls
+        - "traefik.http.routers.stagelocapp.tls.certresolver=production" #certificate
       restart_policy: #how to restart containers when they exit
         condition: any
         delay: 7s
