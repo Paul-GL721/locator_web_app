@@ -15,7 +15,7 @@
     
     #k8s cluster 
     - name: Add host to k8scluster group
-      when: "'k8s' in deploy_target or deploy_target == 'both'"
+      when: "'k8s' in DEPLOY_TARGET or DEPLOY_TARGET == 'both'"
       add_host:
         name: server4
         groups: k8scluster
@@ -27,7 +27,7 @@
     
     #swarm cluster
     - name: Add host to swarmcluster group
-      when: "'swarm' in deploy_target or deploy_target == 'both'"
+      when: "'swarm' in DEPLOY_TARGET or DEPLOY_TARGET == 'both'"
       add_host:
         name: server1
         groups: swarmcluster
@@ -46,9 +46,9 @@
     - name: Proceed only if target includes Kubernetes
       ansible.builtin.debug:
         msg: "Deploying to Kubernetes cluster..."
-      when: "'k8s' in deploy_target or deploy_target == 'both'"
+      when: "'k8s' in DEPLOY_TARGET or DEPLOY_TARGET == 'both'"
     - name: All Kubernetes deployment tasks
-      when: "'k8s' in deploy_target or deploy_target == 'both'"
+      when: "'k8s' in DEPLOY_TARGET or DEPLOY_TARGET == 'both'"
       block:
       - name: check availabilty of server
         become: true
@@ -115,10 +115,10 @@
     - name: Proceed only if target includes Swarm
       ansible.builtin.debug:
         msg: "Deploying to Docker Swarm..."
-      when: "'swarm' in deploy_target or deploy_target == 'both'"
+      when: "'swarm' in DEPLOY_TARGET or DEPLOY_TARGET == 'both'"
 
     - name: All Swarm-specific deployment tasks
-      when: "'swarm' in deploy_target or deploy_target == 'both'"
+      when: "'swarm' in DEPLOY_TARGET or DEPLOY_TARGET == 'both'"
       block:
         - name: Check Swarm node availability
           become: true
