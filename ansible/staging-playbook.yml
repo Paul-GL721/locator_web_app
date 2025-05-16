@@ -110,6 +110,8 @@
 #deploy to docker swarm cluster
 - name: Deploy to Docker Swarm
   hosts: swarmcluster
+  vars: 
+    staging_config_path: "/home/{{ SWARM_REMOTE_USER }}/{{ REMOTE_DIR }}/{{ REMOTE_FOLDER }}/staging_config.json"
   gather_facts: false
   tasks:
     - name: Proceed only if target includes Swarm
@@ -146,7 +148,7 @@
         - name: Create staging configs (from a file on the control machine)
           community.docker.docker_config:
             name: staging_config
-            data: "{{ lookup('file', '/home/{{ SWARM_REMOTE_USER }}/{{ REMOTE_DIR }}/{{ REMOTE_FOLDER }}/staging_config.json') | b64encode }}"
+            data: "{{ lookup('file', staging_config_path) | b64encode }}"
             data_is_b64: true
             state: present
             force: true
