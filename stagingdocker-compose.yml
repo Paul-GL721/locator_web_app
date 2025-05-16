@@ -1,0 +1,63 @@
+version: '3.8'
+services:
+  stagelocapp: #staging service app
+    image: remotestorage/remoterepo:tag
+    build: #build from dockerfile in the current context
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - RUNNING_IN_DOCKER_STACK=true
+    ports:
+      - "8000:8000"
+    secrets:
+      - SQL_PASSWORD 
+      - DJANGO_SECRET_KEY
+    configs:
+      - source: staging_config
+        target: /run/configs/django_config.json
+    networks: #networks to db and reverse proxy
+      - ha-pgpoolbridge-network
+      - traefik_proxy-network
+    deploy: #using swarm to scale the service
+      mode: replicated
+      replicas: 2
+      placement:
+        constraints: 
+          - node.role==worker
+      labels: #generate configurations for the reverse proxy
+        - "traefik.enable=true" # Enable the service
+        - "traefik.http.routers.stageapp.rule=Host(`staging-locator.paulgobero.com`)"
+        - "traefik.http.services.stageapp-service.loadbalancer.server.port=8000"
+        - "traefik.http.routers.stageapp.entrypoints=web,websecure"
+        - "traefik.http.routers.stageapp.tls=true" #enable tls
+        - "traefik.http.routers.stageapp.tls.certresolver=production" #certificate
+      restart_policy: #how to restart containers when they exit
+        condition: any
+        delay: 7s
+        max_attempts: 10
+        window: 120s
+      update_config: #how the service should be updated
+        parallelism: 2
+        delay: 10s
+        failure_action: rollback
+        order: start-first
+      rollback_config: #how the service should be rolled back in case an update fails
+        parallelism: 2
+        delay: 10s
+
+#Communication networks between the containers
+networks:
+  ha-pgpoolbridge-network:
+    external: true
+  traefik_proxy-network:
+    external: true
+#Secrets files
+secrets:
+  SQL_PASSWORD:
+    external: true
+  DJANGO_SECRET_KEY:
+    external: true
+#config files
+configs:
+  staging_config:
+    external: true

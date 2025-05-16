@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 import environ
 import os
+import json
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -48,6 +49,38 @@ if RUNNING_IN_KUBERNETES:
     # the real values
     SECRET_KEY = os.getenv(secret_key_env)
     PASSWORD = os.getenv(sql_password_env)
+
+# check if deployment is in docker swarm
+elif os.getenv('RUNNING_IN_DOCKER_STACK') == 'true':
+    def load_json_vars(path):
+        # function to load variables from secrets and config files
+        try:
+            with open(path) as f:
+                return json.load(f)
+        except FileNotFoundError:
+            return {}
+
+    def read_secret(name, default=''):
+        # function to read secrets from the
+        try:
+            return open(f'/run/secrets/{name}').read().strip()
+        except FileNotFoundError:
+            return default
+
+    CONFIG_PATH = '/run/configs/django_config.json'
+    cfg = load_json_vars(CONFIG_PATH)
+
+    DEBUG = cfg.get("DEBUG", False)
+    ALLOWED_HOSTS = cfg.get("DJANGO_ALLOWED_HOSTS", ["localhost"])
+    CSRF_TRUSTED_ORIGINS = cfg.get("CSRF_TRUSTED_ORIGINS", [])
+    SQL_ENGINE = cfg.get('SQL_ENGINE', 'django.db.backends.postgresql')
+    SQL_DATABASE = cfg.get('SQL_DATABASE', BASE_DIR/'db.sqlite3')
+    SQL_USER = cfg.get('SQL_USER', '')
+    SQL_HOST = cfg.get('SQL_HOST', '')
+    SQL_PORT = cfg.get('SQL_PORT', '5432')
+    APP_DOMAIN = cfg.get("APP_DOMAIN", "http://localhost:8000")
+    SECRET_KEY = read_secret('DJANGO_SECRET_KEY', '')
+    PASSWORD = read_secret('SQL_PASSWORD', '')
 
 else:
     # if in development, Load environment variables from the local .env file
