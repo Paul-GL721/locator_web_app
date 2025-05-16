@@ -145,11 +145,10 @@
             force: yes
             key_file: /home/{{ SWARM_REMOTE_USER }}/.ssh/ansiblegithub
 
-        - name: Create staging configs (from a file on the control machine)
+        - name: Create staging configs (from a file on the target machine)
           community.docker.docker_config:
             name: staging_config
-            data: "{{ lookup('file', staging_config_path) | b64encode }}"
-            data_is_b64: true
+            data_src: staging_config_path
             state: present
             force: true
         
