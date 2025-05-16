@@ -12,10 +12,12 @@ pipeline {
 		VERSION="0.1.${BUILD_NUMBER}"
 		BASE_DIRECTORY='Backend/track_locator'
 		REMOTE_USER='k8sdeployuser'
+		SWARM_REMOTE_USER='deployuser1'
 		REMOTE_DIR='STAGING_BACKEND_LOCATORAPP'
 		REMOTE_FOLDER='Backend/track_locator'
 		REMOTE_REPO_NAME='staging_backend_locator'
 		DOCKER_ACCOUNT='paulgl721'
+		DEPLOY_TARGET='swarm' //this can be set to 'k8s' or 'both'
 		K8S_DEPLOYMENT_FOLDER='z_k8s_deployment'
 		K8S_HELM_CHARTS_FOLDER='helm_charts'
 		K8S_HELM_CHART_TYPE_FOLDER='staging-locatorapp'
@@ -26,6 +28,9 @@ pipeline {
 		ANSIBLE_HOST=credentials('locapp-ansible-host')
 		ANSIBLE_USER=credentials('locapp-ansible-user')
 		ANSIBLE_PRIVATE_KEY_PATH=credentials('locapp-ansible-privatekey')
+		SWARM_ANSIBLE_HOST=credentials('swarm-locapp-ansible-host')
+		SWARM_ANSIBLE_USER =credentials('swarm-locapp-ansible-user')
+		SWARM_ANSIBLE_PRIVATE_KEY_PATH=credentials('swarm-locapp-ansible-privatekey')
 		K8S_APPSECRET_YAML=credentials('k8s_locatorappsecrets_stage_yaml')
 		K8S_DJANGO_APPSECRET_YAML=credentials('k8s_locatorapp-djangosecrets_stage_yaml')
 		EMAIL_TO='team@paulgobero.com'
@@ -127,6 +132,7 @@ pipeline {
 					sh """
 						ansible-playbook ./${BASE_DIRECTORY}/ansible/staging-playbook.yml \
 						--extra-vars="REMOTE_USER=${env.REMOTE_USER} \
+						SWARM_REMOTE_USER=${env.SWARM_REMOTE_USER} \
 						GIT_REPO=${env.GIT_REPO} \
 						VERSION=${env.VERSION} \
 						DOCKER_ACCOUNT=${env.DOCKER_ACCOUNT} \
@@ -141,6 +147,9 @@ pipeline {
 						ANSIBLE_HOST=${env.ANSIBLE_HOST} \
 						ANSIBLE_USER=${env.ANSIBLE_USER} \
 						ANSIBLE_PRIVATE_KEY_PATH=${env.ANSIBLE_PRIVATE_KEY_PATH} \
+						SWARM_ANSIBLE_HOST=${env.SWARM_ANSIBLE_HOST} \
+						SWARM_ANSIBLE_USER=${env.SWARM_ANSIBLE_USER} \
+						SWARM_ANSIBLE_PRIVATE_KEY_PATH=${env.SWARM_ANSIBLE_PRIVATE_KEY_PATH} \
 						K8S_DJANGO_APPSECRET_YAML=${env.K8S_DJANGO_APPSECRET_YAML} \
 						K8S_APPSECRET_YAML=${env.K8S_APPSECRET_YAML} \
 						K8S_NAMESPACE=${env.K8S_NAMESPACE}" \
@@ -305,8 +314,8 @@ pipeline {
 					// Run production ansible-playbook
 					sh """
 						ansible-playbook ./${BASE_DIRECTORY}/ansible/production-playbook.yml \
-						-i ./${BASE_DIRECTORY}/ansible/production.ini \
 						--extra-vars="REMOTE_USER=${env.REMOTE_USER} \
+						SWARM_REMOTE_USER=${env.SWARM_REMOTE_USER} \
 						GIT_REPO=${env.GIT_REPO} \
 						VERSION=${env.VERSION} \
 						DOCKER_ACCOUNT=${env.DOCKER_ACCOUNT} \
@@ -321,6 +330,9 @@ pipeline {
 						ANSIBLE_HOST=${env.ANSIBLE_HOST} \
 						ANSIBLE_USER=${env.ANSIBLE_USER} \
 						ANSIBLE_PRIVATE_KEY_PATH=${env.ANSIBLE_PRIVATE_KEY_PATH} \
+						SWARM_ANSIBLE_HOST=${env.SWARM_ANSIBLE_HOST} \
+						SWARM_ANSIBLE_USER=${env.SWARM_ANSIBLE_USER} \
+						SWARM_ANSIBLE_PRIVATE_KEY_PATH=${env.SWARM_ANSIBLE_PRIVATE_KEY_PATH}
 						K8S_DJANGO_APPSECRET_YAML=${env.K8S_DJANGO_APPSECRET_YAML} \
 						K8S_APPSECRET_YAML=${env.K8S_APPSECRET_YAML} \
 						K8S_NAMESPACE=${env.K8S_NAMESPACE}" \

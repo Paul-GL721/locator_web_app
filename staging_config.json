@@ -1,0 +1,11 @@
+{
+    "DEBUG": "True",
+    "DJANGO_ALLOWED_HOSTS": ["staging-locator.paulgobero.com", "0.0.0.0", "127.0.0.1", "localhost"],
+    "CSRF_TRUSTED_ORIGINS": ["https://staging-locator.paulgobero.com", "http://localhost", "http://127.0.0.1"],
+    "APP_DOMAIN": "https://staging-locator.paulgobero.com",
+    "SQL_ENGINE": "django.db.backends.postgresql",
+    "SQL_DATABASE": "staging-locatordb",
+    "SQL_USER": "staginglocatoruser",
+    "SQL_HOST": "hapostgresql_pgpool",
+    "SQL_PORT": "5432"
+}
