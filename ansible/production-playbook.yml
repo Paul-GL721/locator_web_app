@@ -192,7 +192,7 @@
               - /home/{{ SWARM_REMOTE_USER }}/{{ REMOTE_DIR }}/{{ REMOTE_FOLDER }}/docker-compose.yml
               - version: '3.8'
                 services:
-                  stagelocapp:
+                  locapp:
                     image: "{{ DOCKER_ACCOUNT }}/{{ REMOTE_REPO_NAME }}:V{{ VERSION }}"
         
         # Remove unused configs and secrets
