@@ -5,3 +5,4 @@ ansible/inventory.ini
 ansible/production.ini
 ansible/staging.ini
 staticfiles
+.staging_secret.json
