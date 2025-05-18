@@ -266,6 +266,10 @@ pipeline {
 		}
 
 		stage('9. Build, tag, and push to remote storage') {
+			// Define environment variables
+			environment {
+				REMOTE_REPO_NAME = 'locatorapp'
+			}
 			///Execute if its the production branch
 			when {
 				branch 'main'
