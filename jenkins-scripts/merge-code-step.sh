@@ -35,7 +35,7 @@ done
 # Checkout selected folders in a loop
 for app in "${APPS[@]}"; do
     for folder in "${FOLDERS[@]}"; do
-        if [ -f "$BASE_DIRECTORY/$app/$folder" ]; then
+        if [ -d "$BASE_DIRECTORY/$app/$folder" ]; then
             echo "Checking out: $BASE_DIRECTORY/$app/$folder"
             git checkout origin/development "$BASE_DIRECTORY/$app/$folder"
         else
