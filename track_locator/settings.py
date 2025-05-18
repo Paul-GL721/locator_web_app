@@ -79,7 +79,6 @@ elif os.getenv('RUNNING_IN_DOCKER_STACK') == 'true':
         if versioned_matches:
             # Pick the highest semantic version
             return sorted(versioned_matches, reverse=True)[0][1]
-
         # Fallback to non-versioned secret
         fallback = f'/run/secrets/{prefix}'
         return fallback if os.path.exists(fallback) else None
