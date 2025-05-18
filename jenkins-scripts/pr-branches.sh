@@ -16,7 +16,8 @@ git checkout -b tmpproductionV$VERSION
 APPS=("locator")
 
 # Define the files to include for each app
-FILES=("admin.py" "apps.py" "forms.py" "models.py" "serializers.py" "tests.py" "urls.py" "views.py")
+FILES=("admin.py" "apps.py" "forms.py" "models.py" "tests.py" "urls.py" "views.py" "serializers.py")
+FOLDERS=("static" "templates")
 
 # Checkout selected files in a loop
 for app in "${APPS[@]}"; do
@@ -29,15 +30,23 @@ for app in "${APPS[@]}"; do
         fi
     done
 done
+# Checkout selected folders using a loop a loop
+for app in "${APPS[@]}"; do
+    for folder in "${FOLDERS[@]}"; do
+        full_path="$BASE_DIRECTORY/$app/$folder"
+        echo "Checking out: $full_path"
+        git checkout origin/staging -- "$full_path" || echo "Warning: $full_path not found in origin/staging"
+    done
+done
 
 
 # Checkout additional necessary files
 git checkout origin/production $BASE_DIRECTORY/track_locator $BASE_DIRECTORY/.gitignore \
-    $BASE_DIRECTORY/Dockerfile $BASE_DIRECTORY/entrypoint.sh $BASE_DIRECTORY/Jenkinsfile \
+    $BASE_DIRECTORY/Dockerfile $BASE_DIRECTORY/entrypoint.sh $BASE_DIRECTORY/docker-compose.yml \ 
     $BASE_DIRECTORY/manage.py $BASE_DIRECTORY/Pipfile $BASE_DIRECTORY/Pipfile.lock \
     $BASE_DIRECTORY/README.md $BASE_DIRECTORY/templates $BASE_DIRECTORY/static \ 
     $BASE_DIRECTORY/z_k8s_deployment $BASE_DIRECTORY/jenkins-scripts/build-step.sh \
-    $BASE_DIRECTORY/ansible
+    $BASE_DIRECTORY/ansible $BASE_DIRECTORY/Jenkinsfile 
 
 git push --set-upstream origin tmpproductionV$VERSION
 

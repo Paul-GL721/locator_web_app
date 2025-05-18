@@ -1,5 +1,5 @@
 ---
-#test ansible connection
+#test ansible connection and dynamically add hosts for k8s and swarm
 - name: Run the test playbook 
   gather_facts: false
   hosts: localhost
@@ -11,91 +11,256 @@
     - name: Display the User name
       ansible.builtin.debug:
         msg: "Hello User {{ username_on_the_host.stdout }} from Jenkins and Ansible!!"
+    
+    #k8s cluster 
+    - name: Add host to k8scluster group
+      when: "'k8s' in DEPLOY_TARGET or DEPLOY_TARGET == 'both'"
+      add_host:
+        name: server4
+        groups: k8scluster
+        ansible_host: "{{ ANSIBLE_HOST }}"
+        ansible_user: "{{ ANSIBLE_USER }}"
+        ansible_connection: ssh
+        ansible_ssh_private_key_file: "{{ ANSIBLE_PRIVATE_KEY_PATH }}"
+        ansible_python_interpreter: /usr/bin/python3
+    
+    #swarm cluster
+    - name: Add host to swarmcluster group
+      when: "'swarm' in DEPLOY_TARGET or DEPLOY_TARGET == 'both'"
+      add_host:
+        name: server1
+        groups: swarmcluster
+        ansible_host: "{{ SWARM_ANSIBLE_HOST }}"
+        ansible_user: "{{ SWARM_ANSIBLE_USER }}"
+        ansible_connection: ssh
+        ansible_ssh_private_key_file: "{{ SWARM_ANSIBLE_PRIVATE_KEY_PATH }}"
+        ansible_python_interpreter: /usr/bin/python3
 
-#deploy to a kubernetes cluster
+#deploy to a kubernetes staging cluster
 - name: Deploy to kubernetes cluster
   hosts: k8scluster
   vars:
     k8s_files_base: /home/{{ REMOTE_USER }}/{{ REMOTE_DIR }}/{{ REMOTE_FOLDER }}/{{ K8S_DEPLOYMENT_FOLDER }}
   tasks:
-    - name: check availabilty of server
-      become: true
-      remote_user: "{{ REMOTE_USER }}"
-      action: ping
+    - name: Proceed only if target includes Kubernetes
+      ansible.builtin.debug:
+        msg: "Deploying to Kubernetes cluster..."
+      when: "'k8s' in DEPLOY_TARGET or DEPLOY_TARGET == 'both'"
+    - name: All Kubernetes deployment tasks
+      when: "'k8s' in DEPLOY_TARGET or DEPLOY_TARGET == 'both'"
+      block:
+      - name: check availabilty of server
+        become: true
+        remote_user: "{{ REMOTE_USER }}"
+        action: ping
 
-    - name: Create a directory
-      ansible.builtin.file:
-        path: /home/{{ REMOTE_USER }}/{{ REMOTE_DIR }}
-        state: directory
-        mode: u=rwx,g=rwx,o=rx
-        recurse: yes
-        owner: "{{ REMOTE_USER }}"
-        group: "{{ REMOTE_USER }}"
+      - name: Create a directory
+        ansible.builtin.file:
+          path: /home/{{ REMOTE_USER }}/{{ REMOTE_DIR }}
+          state: directory
+          mode: u=rwx,g=rwx,o=rx
+          recurse: yes
+          owner: "{{ REMOTE_USER }}"
+          group: "{{ REMOTE_USER }}"
 
-    - name: Clone the main branch of the repository
-      ansible.builtin.git:
-        repo: "{{ GIT_REPO }}"
-        dest: /home/{{ REMOTE_USER }}/{{ REMOTE_DIR }}
-        single_branch: yes
-        version: main
-        force: yes
-        key_file: /home/{{ REMOTE_USER }}/.ssh/ansiblegithub
+      - name: Clone the main branch of the repository
+        ansible.builtin.git:
+          repo: "{{ GIT_REPO }}"
+          dest: /home/{{ REMOTE_USER }}/{{ REMOTE_DIR }}
+          single_branch: yes
+          version: main
+          force: yes
+          key_file: /home/{{ REMOTE_USER }}/.ssh/ansiblegithub
 
-    
-    - name: Create inventory.ini (Add server4 to [k8scluster])
-      community.general.ini_file:
-        path: /home/{{ REMOTE_USER }}/{{ REMOTE_DIR }}/{{ REMOTE_FOLDER }}/ansible/production.ini
-        section: "k8scluster"
-        option: "server4"
-        value: ""
+      
+      - name: Create a k8s namespace if not exists
+        kubernetes.core.k8s:
+          name: "{{ K8S_NAMESPACE }}"
+          api_version: v1
+          kind: Namespace
+          state: present
+      
+      - name: Deploy the Locator helm chart from local path
+        kubernetes.core.helm:
+          release_name: "{{ K8S_RELEASE_NAME }}"
+          chart_ref: "{{ k8s_files_base }}/{{ K8S_HELM_CHARTS_FOLDER }}/{{ K8S_HELM_CHART_TYPE_FOLDER }}"
+          release_namespace: "{{ K8S_NAMESPACE }}"
+          update_repo_cache: false        # Pulls latest chart metadata
+          wait: true                      # Waits for resources to be fully ready
+          timeout: 1200s                    # Maximum time in sec to wait for the resources to deploy
+          release_values:
+            image:
+              repository: "{{ DOCKER_ACCOUNT }}/{{ REMOTE_REPO_NAME }}" #repository containg the image
+              tag: "V{{ VERSION }}"
+            secretRef:
+              actualdbpassword: "{{ K8S_APPSECRET_YAML | quote }}"
+              actualdjangosecretkey: "{{ K8S_DJANGO_APPSECRET_YAML | quote }}"
+                      
+      - name: Check if deployment pods are running
+        kubernetes.core.k8s_info:
+          kind: Pod
+          namespace: "{{ K8S_NAMESPACE }}"
+        register: pod_info
 
+      - name: Show running pods
+        debug:
+          var: pod_info.resources
 
-    - name: Set host variables for server4
-      community.general.ini_file:
-        path: /home/{{ REMOTE_USER }}/{{ REMOTE_DIR }}/{{ REMOTE_FOLDER }}/ansible/production.ini
-        section: "server4"
-        option: "{{ item.key }}"
-        value: "{{ item.value }}"
-      loop:
-        - { key: 'ansible_host', value: "{{ ANSIBLE_HOST }}" }
-        - { key: 'ansible_user', value: "{{ ANSIBLE_USER }}" }
-        - { key: 'ansible_connection', value: 'ssh' }
-        - { key: 'ansible_ssh_private_key_file', value: "{{ ANSIBLE_PRIVATE_KEY_PATH }}" }
-        - { key: 'ansible_python_interpreter', value: '/usr/bin/python3' }
+#deploy to docker swarm cluster
+- name: Deploy to Docker Swarm
+  hosts: swarmcluster
+  gather_facts: false
+  tasks:
+    - name: Proceed only if target includes Swarm
+      ansible.builtin.debug:
+        msg: "Deploying to Docker Swarm..."
+      when: "'swarm' in DEPLOY_TARGET or DEPLOY_TARGET == 'both'"
 
+    - name: All Swarm-specific deployment tasks
+      when: "'swarm' in DEPLOY_TARGET or DEPLOY_TARGET == 'both'"
+      block:
+        - name: Check Swarm node availability
+          become: true
+          remote_user: "{{ SWARM_REMOTE_USER }}"
+          ansible.builtin.ping:
+        
+        - name: Create a directory
+          ansible.builtin.file:
+            path: /home/{{ SWARM_REMOTE_USER }}/{{ REMOTE_DIR }}
+            state: directory
+            mode: u=rwx,g=rwx,o=rx
+            recurse: yes
+            owner: "{{ SWARM_REMOTE_USER }}"
+            group: "{{ SWARM_REMOTE_USER }}"
 
-    - name: Create a k8s namespace
-      kubernetes.core.k8s:
-        name: "{{ K8S_NAMESPACE }}"
-        api_version: v1
-        kind: Namespace
-        state: present
+        - name: Clone the main branch of the repository
+          ansible.builtin.git:
+            repo: "{{ GIT_REPO }}"
+            dest: /home/{{ SWARM_REMOTE_USER }}/{{ REMOTE_DIR }}
+            single_branch: yes
+            version: main
+            force: yes
+            key_file: /home/{{ SWARM_REMOTE_USER }}/.ssh/ansiblegithub
 
-    
-    - name: Deploy the Locator helm chart from local path
-      kubernetes.core.helm:
-        release_name: "{{ K8S_RELEASE_NAME }}"
-        chart_ref: "{{ k8s_files_base }}/{{ K8S_HELM_CHARTS_FOLDER }}/{{ K8S_HELM_CHART_TYPE_FOLDER }}"
-        release_namespace: "{{ K8S_NAMESPACE }}"
-        update_repo_cache: false        # Pulls latest chart metadata
-        wait: true                      # Waits for resources to be fully ready
-        timeout: 800s                    # Maximum time in sec to wait for the resources to deploy
-        release_values:
-          image:
-            repository: "{{ DOCKER_ACCOUNT }}/{{ REMOTE_REPO_NAME }}" #repository containg the image
-            tag: "V{{ VERSION }}"
-          secretRef:
-            actualdbpassword: "{{ K8S_APPSECRET_YAML }}"
-            actualdjangosecretkey: "{{ K8S_DJANGO_APPSECRET_YAML }}"
-            
-          
-    - name: Check if deployment pods are running
-      kubernetes.core.k8s_info:
-        kind: Pod
-        namespace: "{{ K8S_NAMESPACE }}"
-      register: pod_info
+        - name: Create staging configs (from a file on the target machine)
+          community.docker.docker_config:
+            name: locapp_production_config_{{ VERSION }}
+            data_src: "/home/{{ SWARM_REMOTE_USER }}/{{ REMOTE_DIR }}/{{ REMOTE_FOLDER }}/locapp_production_config.json"
+            state: present
+            force: true
+        
+        - name: Create DJANGO_SECRET_KEY
+          community.docker.docker_secret:
+            name: DJANGO_SECRET_KEY_{{ VERSION }}
+            data: "{{ K8S_DJANGO_APPSECRET_YAML | b64encode }}"
+            data_is_b64: true
+            state: present
+            force: true
 
-    - name: Show running pods
-      debug:
-        var: pod_info.resources
+        - name: Create SQL_PASSWORD
+          community.docker.docker_secret:
+            name: SQL_PASSWORD_{{ VERSION }}
+            data: "{{ K8S_APPSECRET_YAML | b64encode }}"
+            data_is_b64: true
+            state: present
+            force: true
+        
+        - name: Replace image and config version in docker-compose.yml
+          become: true
+          ansible.builtin.shell: |
+            sed -i \
+            -e 's|remotestorage/remoterepo:tag|{{ DOCKER_ACCOUNT }}/{{ REMOTE_REPO_NAME }}:V{{ VERSION }}|g' \
+            -e 's|locapp_production_config_confversion|locapp_production_config_{{ VERSION }}|g' \
+            -e 's|DJANGO_SECRET_KEY_version|DJANGO_SECRET_KEY_{{ VERSION }}|g' \
+            -e 's|SQL_PASSWORD_version|SQL_PASSWORD_{{ VERSION }}|g' \
+            /home/{{ SWARM_REMOTE_USER }}/{{ REMOTE_DIR }}/{{ REMOTE_FOLDER }}/docker-compose.yml
+          args:
+            executable: /bin/bash
 
+        - name: Ensure jsondiff is installed on remote host
+          become: true
+          ansible.builtin.pip:
+            name: jsondiff
+            executable: pip3
+
+        - name: Deploy stack using docker-compose
+          become: true
+          community.docker.docker_stack:
+            name: locatorapp
+            state: present
+            compose:
+              - /home/{{ SWARM_REMOTE_USER }}/{{ REMOTE_DIR }}/{{ REMOTE_FOLDER }}/docker-compose.yml
+              - version: '3.8'
+                services:
+                  stagelocapp:
+                    image: "{{ DOCKER_ACCOUNT }}/{{ REMOTE_REPO_NAME }}:V{{ VERSION }}"
+        
+        # Remove unused configs and secrets
+        - name: Get all Docker configs # remove configs
+          ansible.builtin.command: docker config ls --format '{{"{{"}}.Name{{"}}"}}'
+          register: docker_configs
+
+        - name: Set list of config names
+          set_fact:
+            config_names: "{{ docker_configs.stdout_lines }}"
+
+        - name: Remove old configs automatically
+          vars:
+            current_version: "locapp_production_config_{{ VERSION }}"
+          block:
+            - name: Filter out the current config
+              set_fact:
+                removable_configs: >-
+                  {{
+                    config_names
+                    | select('match', '^locapp_production_config_')
+                    | reject('equalto', current_version)
+                    | list
+                  }}
+
+            - name: Attempt to delete old configs
+              community.docker.docker_config:
+                name: "{{ item }}"
+                state: absent
+              loop: "{{ removable_configs }}"
+              ignore_errors: true
+
+        - name: Get all Docker secrets # remove secrets
+          ansible.builtin.command: docker secret ls --format '{{"{{"}}.Name{{"}}"}}'
+          register: docker_secrets
+
+        - name: Set list of secret names
+          set_fact:
+            secret_names: "{{ docker_secrets.stdout_lines }}"
+
+        - name: Remove old secrets automatically
+          vars:
+            current_django_secret: "DJANGO_SECRET_KEY_{{ VERSION }}"
+            current_sql_secret: "SQL_PASSWORD_{{ VERSION }}"
+          block:
+            - name: Filter old DJANGO secrets
+              set_fact:
+                old_django_secrets: >-
+                  {{
+                    secret_names
+                    | select('match', '^DJANGO_SECRET_KEY_')
+                    | reject('equalto', current_django_secret)
+                    | list
+                  }}
+
+            - name: Filter old SQL secrets
+              set_fact:
+                old_sql_secrets: >-
+                  {{
+                    secret_names
+                    | select('match', '^SQL_PASSWORD_')
+                    | reject('equalto', current_sql_secret)
+                    | list
+                  }}
+
+            - name: Delete old secrets
+              community.docker.docker_secret:
+                name: "{{ item }}"
+                state: absent
+              loop: "{{ old_django_secrets + old_sql_secrets }}"
+              ignore_errors: true
