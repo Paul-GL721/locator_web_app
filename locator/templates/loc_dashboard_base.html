@@ -1,0 +1,100 @@
+
+{% extends "dashboard_base_file.html" %}
+
+
+{% block title %}<title>locator</title> {% endblock %}
+{% load static %}
+
+{% block extra_css%} 
+
+{% endblock %}
+
+{% block sidebar%}
+    <nav id="sidebar">
+        <div class="sidebar-header">
+            <h4 class="text-center">Locator Administrator</h4>
+        </div>
+        <hr />
+        <ul class="list-unstyled components">
+            <li class="nav-item">
+                <a class="nav-link active" href="">
+                    <i class="fas fa-receipt me-2"></i>
+                    <span class="text-nowrap">Locator Overview</span>
+                </a>
+            </li>
+            <li>
+            	<a href="{% url 'tabular_report' %}" class="nav-link text-white">
+		          <i class="fas fa-money-check-alt" style="font-size: 16px;"></i>  View table Report</a>
+		        </a>
+		    </li>
+            <li>
+            	<a href="#" class="nav-link text-white">
+		          <i class="far fa-file-archive" style="font-size: 16px;"></i>  View on Map</a>
+		        </a>
+		    </li>
+            <hr />
+            <div class="dropdown">
+                <a id="dropdownUser1" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" href="#" data-bs-toggle="dropdown" aria-expanded="false"><img class="rounded-circle me-2" src="" alt width="32" height="32" /><strong></strong>
+                </a>
+                <ul class="shadow dropdown-menu dropdown-menu-dark text-small" aria-labelledby="dropdownUser1">
+                    <li><a class="dropdown-item" href="#">Profile</a></li>
+                    <li>
+                        <hr class="dropdown-divider" />
+                    </li>
+                    <li><a class="dropdown-item" href="#">Sign out</a></li>
+                </ul>
+            </div>
+        </ul>            
+    </nav>
+{% endblock %}
+
+{% block navigationbar %}
+<nav class="navbar navbar-light navbar-expand-md bg-info" style="background: #17a2b8; padding-bottom: 5px">
+    {% if user.is_authenticated %}
+        <div class="container"> 
+            <button type="button" id="sidebarCollapse" class="btn btn-info text-nowrap">
+                <i class="fas fa-align-left menu_icon"></i><span>Hide Menu</span>
+            </button> 
+            <div class="collapse navbar-collapse" id="navcol-3">
+                <ul class="navbar-nav mx-auto">
+                    {% block navigation_forms %}
+                        <li class="nav-item dropdown">
+                            <a class="dropdown-toggle nav-link fw-bold text-dark" href="#" id="formsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="padding-right: 35px;">Administrator Forms</a>
+                            <div class="dropdown-menu">
+                                <a class="dropdown-item" href="">Add a User to Group&nbsp;</a>
+                                <a class="dropdown-item" href="#">Create New group</a>
+                            </div>
+                        </li>
+                    {% endblock %}
+                    {% block navigation_actions %}
+                
+                    {% endblock %}
+                </ul>
+                <!-- Logout Button as Form -->
+                <form method="post" action="{% url 'logout' %}" style="display: inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.path }}">
+                    <button type="submit" class="btn btn-primary">Logout</button>
+                </form>
+            </div>
+        </div>
+        {% else %}
+        <a class="btn btn-primary" role="button" href="{% url 'login' %}?next={{ request.path }}">Login</a>
+    {% endif %}
+</nav>
+{% endblock %}
+
+
+{% block chart %}    {% endblock %}  
+
+
+
+
+
+{% block extra_javascript %}
+<script src="{% static 'js/Bootstrap_Table/export/bootstrap-table-export.min.js' %}"></script>
+<script src="{% static 'js/Bootstrap_Table/bootstrap-table-editable.min.js' %}"></script>
+<script src="{% static 'js/Bootstrap_Table/bootstrap-table-print.min.js' %}"></script>
+<script src="{% static 'js/Bootstrap_Table/bootsrap_table_stickeyheader_extension.min.js' %}"></script>
+
+{% endblock %}

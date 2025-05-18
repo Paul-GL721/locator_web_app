@@ -1,0 +1,46 @@
+{% extends "base_file.html" %}
+
+{% block title %}<title>login</title> {% endblock %}
+{% block header %} {% endblock %}
+{% load static %}
+<!-- Body contents contents -->
+{% block content %}
+	<section class="py-4 py-xl-5">
+        <div class="container-fluid">     
+            <div class="col-md-2"></div>
+            <div class="col-md-8">
+                <div class="pb-md-5">
+                    <h1 class="text-center text-primary">GENERATE QR CODE</h1>
+                    <p class="lead text-center text-primary">
+                        Scanning this qr code will get the position of the device: This will be added to a group selected by a USER
+                    </p>
+                </div>
+                <form id="getdeviceposition" class="row g-3" action="{% url 'generate_qr' %}" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-3 row">
+                        <div class="col-md-3">
+                            <label class="form-label fs-4 text-end text-primary col-form-label" for="usergrp">User Group:</label>
+                        </div>
+                        <div class="col-md-7">
+                            <select class="form-select form-select-lg form-control border rounded border-primary custom-select" id="usergrp"  name="usergrp">
+                                <option value=" " selected="">Select Group to generate QRcode</option>
+                                {% for grp in available_groups %}
+                                <option value='{{ grp.LocAppGrp_code }}'>{{ grp.LocAppGrp_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-1"></div>
+                    </div>
+                </form>
+            </div>
+            <div class="col-md-2"></div>
+            <div class="row" id="qrcode-container"> </div>
+            <div class="text-center my-3">
+                <button class="btn btn-primary" id="print-qr-btn">Print QR Code</button>
+            </div>
+        </div>
+    </section>
+{% endblock %}
+{% block extra_javascript%} 
+
+{% endblock %}
