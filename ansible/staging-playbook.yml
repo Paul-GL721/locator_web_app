@@ -195,10 +195,14 @@
                   stagelocapp:
                     image: "{{ DOCKER_ACCOUNT }}/{{ REMOTE_REPO_NAME }}:V{{ VERSION }}"
         
-        #remove unused configs and secrets
-        - name: Get all Docker configs #remove configs
-          ansible.builtin.command: docker config ls --format '{{{{.Name}}}}'
+        # Remove unused configs and secrets
+        - name: Get all Docker configs # remove configs
+          ansible.builtin.command: docker config ls --format '{{"{{"}}.Name{{"}}"}}'
           register: docker_configs
+
+        - name: Set list of config names
+          set_fact:
+            config_names: "{{ docker_configs.stdout_lines }}"
 
         - name: Remove old configs automatically
           vars:
@@ -208,10 +212,9 @@
               set_fact:
                 removable_configs: >-
                   {{
-                    docker_configs.configs
-                    | selectattr('Spec.Name', 'search', '^staging_config_')
-                    | rejectattr('Spec.Name', 'equalto', current_version)
-                    | map(attribute='Spec.Name')
+                    config_names
+                    | select('match', '^staging_config_')
+                    | reject('equalto', current_version)
                     | list
                   }}
 
@@ -222,9 +225,13 @@
               loop: "{{ removable_configs }}"
               ignore_errors: true
 
-        - name: Get all Docker secrets #remove secrets
-          ansible.builtin.command: docker secret ls --format '{{{{.Name}}}}'
+        - name: Get all Docker secrets # remove secrets
+          ansible.builtin.command: docker secret ls --format '{{"{{"}}.Name{{"}}"}}'
           register: docker_secrets
+
+        - name: Set list of secret names
+          set_fact:
+            secret_names: "{{ docker_secrets.stdout_lines }}"
 
         - name: Remove old secrets automatically
           vars:
@@ -235,10 +242,9 @@
               set_fact:
                 old_django_secrets: >-
                   {{
-                    docker_secrets.secrets
-                    | selectattr('Spec.Name', 'search', '^DJANGO_SECRET_KEY_')
-                    | rejectattr('Spec.Name', 'equalto', current_django_secret)
-                    | map(attribute='Spec.Name')
+                    secret_names
+                    | select('match', '^DJANGO_SECRET_KEY_')
+                    | reject('equalto', current_django_secret)
                     | list
                   }}
 
@@ -246,10 +252,9 @@
               set_fact:
                 old_sql_secrets: >-
                   {{
-                    docker_secrets.secrets
-                    | selectattr('Spec.Name', 'search', '^SQL_PASSWORD_')
-                    | rejectattr('Spec.Name', 'equalto', current_sql_secret)
-                    | map(attribute='Spec.Name')
+                    secret_names
+                    | select('match', '^SQL_PASSWORD_')
+                    | reject('equalto', current_sql_secret)
                     | list
                   }}
 
@@ -259,4 +264,3 @@
                 state: absent
               loop: "{{ old_django_secrets + old_sql_secrets }}"
               ignore_errors: true
-
