@@ -171,8 +171,7 @@
             sed -i 's|remotestorage/remoterepo:tag|{{ DOCKER_ACCOUNT }}/{{ REMOTE_REPO_NAME }}:V{{ VERSION }}|g' /home/{{ SWARM_REMOTE_USER }}/{{ REMOTE_DIR }}/{{ REMOTE_FOLDER }}/stagingdocker-compose.yml
           args:
             executable: /bin/bash
-
-        
+ 
         - name: Ensure jsondiff is installed on remote host
           become: true
           ansible.builtin.pip:
