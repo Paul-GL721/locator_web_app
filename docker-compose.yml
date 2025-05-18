@@ -1,14 +1,12 @@
 version: '3.8'
 services:
-  stagelocapp: #staging service app
+  locapp: #staging service app
     image: remotestorage/remoterepo:tag
     build: #build from dockerfile in the current context
       context: .
       dockerfile: Dockerfile
     environment:
       - RUNNING_IN_DOCKER_STACK=true
-    ports:
-      - "8000:8000"
     secrets:
       - SQL_PASSWORD_version
       - DJANGO_SECRET_KEY_version
@@ -26,11 +24,11 @@ services:
           - node.role==manager
       labels: #generate configurations for the reverse proxy
         - "traefik.enable=true" # Enable the service
-        - "traefik.http.routers.stagelocapp.rule=Host(`locatorapp.paulgobero.com`)"
-        - "traefik.http.services.stagelocapp-service.loadbalancer.server.port=8000"
-        - "traefik.http.routers.stagelocapp.entrypoints=web,websecure"
-        - "traefik.http.routers.stagelocapp.tls=true" #enable tls
-        - "traefik.http.routers.stagelocapp.tls.certresolver=production" #certificate
+        - "traefik.http.routers.locapp.rule=Host(`locatorapp.paulgobero.com`)"
+        - "traefik.http.services.locapp-service.loadbalancer.server.port=8000"
+        - "traefik.http.routers.locapp.entrypoints=web,websecure"
+        - "traefik.http.routers.locapp.tls=true" #enable tls
+        - "traefik.http.routers.locapp.tls.certresolver=production" #certificate
       restart_policy: #how to restart containers when they exit
         condition: any
         delay: 7s
