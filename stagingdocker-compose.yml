@@ -7,8 +7,6 @@ services:
       dockerfile: Dockerfile
     environment:
       - RUNNING_IN_DOCKER_STACK=true
-    ports:
-      - "8000:8000"
     secrets:
       - SQL_PASSWORD_version
       - DJANGO_SECRET_KEY_version
