@@ -16,7 +16,8 @@ git checkout -f production
 APPS=("locator")
 
 # Define the files to include for each app
-FILES=("admin.py" "apps.py" "forms.py" "models.py" "tests.py" "urls.py" "views.py")
+FILES=("admin.py" "apps.py" "forms.py" "models.py" "tests.py" "urls.py" "views.py" "serializers.py")
+FOLDERS=("static" "templates")
 
 # Checkout selected files in a loop
 for app in "${APPS[@]}"; do
@@ -29,7 +30,14 @@ for app in "${APPS[@]}"; do
         fi
     done
 done
-
+# Checkout selected folders using a loop a loop
+for app in "${APPS[@]}"; do
+    for folder in "${FOLDERS[@]}"; do
+        full_path="$BASE_DIRECTORY/$app/$folder"
+        echo "Checking out: $full_path"
+        git checkout origin/staging -- "$full_path" || echo "Warning: $full_path not found in origin/staging"
+    done
+done
 
 # Checkout additional necessary files
 git checkout origin/staging $BASE_DIRECTORY/track_locator $BASE_DIRECTORY/.gitignore \
