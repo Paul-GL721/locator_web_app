@@ -76,7 +76,6 @@ elif os.getenv('RUNNING_IN_DOCKER_STACK') == 'true':
                     versioned_matches.append((version, match))
                 except:
                     continue  # skip invalid version strings
-
         if versioned_matches:
             # Pick the highest semantic version
             return sorted(versioned_matches, reverse=True)[0][1]

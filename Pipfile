@@ -12,6 +12,7 @@ django-environ = "*"
 psycopg = {extras = ["binary"], version = "*"}
 pillow = "*"
 django-cors-headers = "*"
+packaging = "*"
 
 [dev-packages]
 
