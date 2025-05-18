@@ -10,8 +10,6 @@ urlpatterns = [
     path("usernamepasswd/", UsernamePasswdLogin.as_view(),
          name="username_passwd_login"),
     path("adduser/", add_user.as_view(), name="add_user"),
-    path("createuserprofile/", CreateUserProfile.as_view(),
-         name="create_user_profile"),
     path("generatepositonqr/", GenerateQRCodeView.as_view(), name="generate_qr"),
     path("qr-login/", QrLoginView.as_view(), name='qr_login'),
     # path("open-app/", OpenAppRedirectView.as_view(), name="open_app_redirect"),
@@ -27,6 +25,8 @@ urlpatterns = [
     # mobile urls
     path('mobile/newgpsdata/', mobile_add_newgpsdata.as_view(),
          name='add_newgpsdata'),
+    path("mobile/createuserprofile/", CreateUserProfile.as_view(),
+         name="create_user_profile"),
 
 
     # mobile authentication
