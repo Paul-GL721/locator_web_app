@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ .Values.volumes.pvStaticfiles.name }}
+spec:
+  capacity:
+    storage: {{ .Values.volumes.pvStaticfiles.capacity }}
+  volumeMode: Filesystem
+  accessModes:
+    - {{ .Values.volumes.pvStaticfiles.accessmode }}
+  storageClassName: {{ .Values.volumes.pvStaticfiles.storageclass }}
+  persistentVolumeReclaimPolicy: {{ .Values.volumes.pvStaticfiles.policy }}
+  csi:
+    driver: efs.csi.aws.com
+    volumeHandle: fs-09619768c779c51f7

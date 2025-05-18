@@ -1,0 +1,11 @@
+{
+    "DEBUG": "True",
+    "DJANGO_ALLOWED_HOSTS": ["locatorapp.paulgobero.com"],
+    "CSRF_TRUSTED_ORIGINS": ["https://locatorapp.paulgobero.com"],
+    "APP_DOMAIN": "https://locatorapp.paulgobero.com",
+    "SQL_ENGINE": "django.db.backends.postgresql",
+    "SQL_DATABASE": "locatorappdb",
+    "SQL_USER": "locatoruser",
+    "SQL_HOST": "hapostgresql_pgpool",
+    "SQL_PORT": "5432"
+}

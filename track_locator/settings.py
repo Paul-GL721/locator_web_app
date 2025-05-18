@@ -13,6 +13,10 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 import environ
 import os
+import json
+import glob
+import re
+from packaging.version import Version
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -33,7 +37,6 @@ if RUNNING_IN_KUBERNETES:
         config_dir / 'DJANGO_ALLOWED_HOSTS').read().strip().split(",")
     CSRF_TRUSTED_ORIGINS = open(
         config_dir / 'CSRF_TRUSTED_ORIGINS').read().strip().split(",")
-    SECRET_KEY = open(config_dir / 'SECRET_KEY').read().strip()
     SQL_ENGINE = open(config_dir / 'SQL_ENGINE').read().strip()
     SQL_DATABASE = open(config_dir / 'SQL_DATABASE').read().strip()
     SQL_USER = open(config_dir / 'SQL_USER').read().strip()
@@ -41,8 +44,67 @@ if RUNNING_IN_KUBERNETES:
     SQL_PORT = open(config_dir / 'SQL_PORT').read().strip()
     APP_DOMAIN = open(config_dir / 'APP_DOMAIN').read().strip()
 
-    # read the values in the secret passed as an env variables
-    PASSWORD = os.getenv('SQL_PASSWORD')
+    # Get actual environment variable names from deployment pointers
+    sql_password_env = os.getenv(
+        "DJANGO_SQL_PASSWORD_ENV_VAR_NAME", "SQL_PASSWORD")
+    secret_key_env = os.getenv(
+        "DJANGO_SECRET_KEY_ENV_VAR_NAME", "DJANGO_SECRET_KEY")
+    # the real values
+    SECRET_KEY = os.getenv(secret_key_env)
+    PASSWORD = os.getenv(sql_password_env)
+
+# check if deployment is in docker swarm
+elif os.getenv('RUNNING_IN_DOCKER_STACK') == 'true':
+    def load_json_vars(path):
+        # function to load variables from secrets and config files
+        try:
+            with open(path) as f:
+                return json.load(f)
+        except FileNotFoundError:
+            return {}
+
+    def find_versioned_secret(prefix):
+        matches = glob.glob(f'/run/secrets/{prefix}_*')
+        versioned_matches = []
+        for match in matches:
+            # Extract version from file name
+            m = re.search(f'{prefix}_(.+)$', match)
+            if m:
+                try:
+                    # Use packaging.version for semver
+                    version = Version(m.group(1))
+                    versioned_matches.append((version, match))
+                except:
+                    continue  # skip invalid version strings
+        if versioned_matches:
+            # Pick the highest semantic version
+            return sorted(versioned_matches, reverse=True)[0][1]
+        # Fallback to non-versioned secret
+        fallback = f'/run/secrets/{prefix}'
+        return fallback if os.path.exists(fallback) else None
+
+    def read_secret(prefix, default=''):
+        path = find_versioned_secret(prefix)
+        if path and os.path.exists(path):
+            with open(path) as f:
+                return f.read().strip()
+        return default
+
+    CONFIG_PATH = '/run/configs/django_config.json'
+    cfg = load_json_vars(CONFIG_PATH)
+
+    DEBUG = cfg.get("DEBUG", False)
+    ALLOWED_HOSTS = cfg.get("DJANGO_ALLOWED_HOSTS", ["localhost"])
+    CSRF_TRUSTED_ORIGINS = cfg.get("CSRF_TRUSTED_ORIGINS", [])
+    SQL_ENGINE = cfg.get('SQL_ENGINE', 'django.db.backends.postgresql')
+    SQL_DATABASE = cfg.get('SQL_DATABASE', BASE_DIR/'db.sqlite3')
+    SQL_USER = cfg.get('SQL_USER', '')
+    SQL_HOST = cfg.get('SQL_HOST', '')
+    SQL_PORT = cfg.get('SQL_PORT', '5432')
+    APP_DOMAIN = cfg.get("APP_DOMAIN", "http://localhost:8000")
+    SECRET_KEY = read_secret('DJANGO_SECRET_KEY', '')
+    PASSWORD = read_secret('SQL_PASSWORD', '')
+
 else:
     # if in development, Load environment variables from the local .env file
     env_file_path = Path(__file__).resolve().parent.parent / '.env'
@@ -50,6 +112,7 @@ else:
 
     DEBUG = env('DEBUG', default='False')
     ALLOWED_HOSTS = env('DJANGO_ALLOWED_HOSTS', default=['127.0.0.1'])
+    CSRF_TRUSTED_ORIGINS = env('CSRF_TRUSTED_ORIGINS'),
     SECRET_KEY = env('SECRET_KEY')
     SQL_ENGINE = env('SQL_ENGINE', default='django.db.backends.postgresql')
     SQL_DATABASE = str(env('SQL_DATABASE', default=BASE_DIR / 'db.sqlite3'))
@@ -58,6 +121,8 @@ else:
     PASSWORD = env('SQL_PASSWORD', default='')
     SQL_PORT = env('SQL_PORT', default='5432')
     APP_DOMAIN = env('APP_DOMAIN', default='http://localhost:8000')
+
+    print(f"trusted origin are {CSRF_TRUSTED_ORIGINS}")
 
 
 # Application definition
@@ -71,10 +136,13 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework.authtoken',
     'rest_framework',
+    'corsheaders',
     'locator.apps.LocatorConfig',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -82,6 +150,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
 ]
 
 ROOT_URLCONF = 'track_locator.urls'
@@ -171,4 +240,15 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = "locator.LocAppUser"
 
 # Redirect to home URL after login
-# LOGIN_REDIRECT_URL = 'after_login'
+LOGIN_REDIRECT_URL = 'after_login'
+
+# allow cross-origin resource sharing
+# CORS_ALLOWED_ORIGINS = []
+CORS_ALLOW_ALL_ORIGINS = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+CORS_ALLOW_HEADERS = ['X-Cordova-App', 'content-type']
+
+# CORS_ALLOWED_ORIGINS = [
+#     "http://localhost:8000",
+#     "file://",  # Cordova file origin
+# ]

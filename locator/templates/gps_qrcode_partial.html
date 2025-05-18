@@ -1,0 +1,22 @@
+<div id="qr-print-section">
+    <div class="row d-flex justify-content-center">
+        <div class="col-md-6 col-xl-4">
+            <div class="card border-light">
+                <div class="card-body fw-bolder text-center text-muted d-flex flex-column align-items-center">
+                    {% if qr_image_data %}
+                        <img src="{{ qr_image_data}}" alt="QR Code" class="img-fluid my-3" />
+                        <div>
+                            <div class="row"> 
+                                <div class="col-12 col-sm-12 col-md-12">
+                                    <h5> Scan to generate position </h5>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <p>QR code could not be generated.</p>
+                    {% endif %} 
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

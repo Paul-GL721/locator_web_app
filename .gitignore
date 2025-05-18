@@ -1,3 +1,8 @@
 .env
 .DS_Store
 static/images/.DS_Store
+ansible/inventory.ini
+ansible/production.ini
+ansible/staging.ini
+staticfiles
+.staging_secret.json

@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.volumes.pvcStaticfiles.existingpvclaimName }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  storageClassName: {{ .Values.volumes.pvStaticfiles.storageclass }}
+  accessModes:
+    - {{ .Values.volumes.pvStaticfiles.accessmode }}
+  resources:
+    requests:
+      storage: {{ .Values.volumes.pvcStaticfiles.claimcapacity }}

@@ -23,9 +23,12 @@ class LocAppGroupsSerializer(serializers.ModelSerializer):
 
 # serializer for the position model
 class LocAppPositionsSerializer(serializers.ModelSerializer):
-    LocAppPos_user = LocAppUserSerializer()
+    LocAppPos_user = serializers.PrimaryKeyRelatedField(
+        queryset=LocAppUser.objects.all())
+    LocAppPos_user_group = serializers.PrimaryKeyRelatedField(
+        queryset=LocAppGroups.objects.all())
 
     class Meta:
         model = LocAppPositions
         fields = ['LocAppPos_id', 'LocAppPos_Date', 'LocAppPos_timestamp', 'LocAppPos_latitude', 'LocAppPos_longitude',  'LocAppPos_accuracy',
-                  'server_Captured_on', 'Last_modified', 'offline_Captured_on', 'offline_pkid', 'LocAppPos_user']
+                  'server_Captured_on', 'Last_modified', 'offline_Captured_on', 'offline_pkid', 'LocAppPos_user', 'LocAppPos_user_group']

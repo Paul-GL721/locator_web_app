@@ -1,0 +1,51 @@
+<div class="row mb-3" style="padding-top: 10px;">
+    <div class="col-md-6">
+        <div class="row align-items-center">
+            <div class="col-md-4">
+                <label for="reportusergrp" class="col-form-label"><strong>Select Group:</strong></label>
+            </div>
+            <div class="col-md-8">
+                <select class="form-select border border-primary rounded h-100 multiselect" id="reportusergrp" name="reportusergrp[]" multiple>
+                    {% for grp in available_groups %}
+                        <option value="{{ grp.LocAppGrp_code }}">{{ grp.LocAppGrp_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="row align-items-center">
+            <div class="col-md-4">
+                <label for="reportusersingrp" class="col-form-label"><strong>Select Users:</strong></label>
+            </div>
+            <div class="col-md-8">
+                <select class="form-select border border-primary rounded h-100 multiselect" id="reportusersingrp" name="reportusersingrp[]" multiple disabled>
+                </select>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-3">
+    <div class="col-md-6">
+        <div class="row align-items-center">
+            <div class="col-md-4">
+                <label for="datepicker1" class="col-form-label"><strong>Start Date:</strong></label>
+            </div>
+            <div class="col-md-8">
+                <input type="date" id="datepicker1" value="{{ start_date|date:'Y-m-d' }}" name="fromdate" class="form-control border border-primary rounded h-100">
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="row align-items-center">
+            <div class="col-md-4">
+                <label for="datepicker2" class="col-form-label"><strong>End Date:</strong></label>
+            </div>
+            <div class="col-md-8">
+                <input type="date" id="datepicker2" value="{{ latest_date|date:'Y-m-d' }}" name="todate" class="form-control border border-primary rounded h-100">
+            </div>
+        </div>
+    </div>
+</div>
+
