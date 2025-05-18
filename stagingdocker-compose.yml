@@ -10,8 +10,8 @@ services:
     ports:
       - "8000:8000"
     secrets:
-      - SQL_PASSWORD 
-      - DJANGO_SECRET_KEY
+      - SQL_PASSWORD_version
+      - DJANGO_SECRET_KEY_version
     configs:
       - source: staging_config_confversion
         target: /run/configs/django_config.json
@@ -53,11 +53,11 @@ networks:
     external: true
 #Secrets files
 secrets:
-  SQL_PASSWORD:
+  SQL_PASSWORD_version:
     external: true
-  DJANGO_SECRET_KEY:
+  DJANGO_SECRET_KEY_version:
     external: true
 #config files
 configs:
-  staging_config:
+  staging_config_confversion:
     external: true

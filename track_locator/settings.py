@@ -14,6 +14,9 @@ from pathlib import Path
 import environ
 import os
 import json
+import glob
+import re
+from packaging.version import Version
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -60,12 +63,34 @@ elif os.getenv('RUNNING_IN_DOCKER_STACK') == 'true':
         except FileNotFoundError:
             return {}
 
-    def read_secret(name, default=''):
-        # function to read secrets from the
-        try:
-            return open(f'/run/secrets/{name}').read().strip()
-        except FileNotFoundError:
-            return default
+    def find_versioned_secret(prefix):
+        matches = glob.glob(f'/run/secrets/{prefix}_*')
+        versioned_matches = []
+        for match in matches:
+            # Extract version from file name
+            m = re.search(f'{prefix}_(.+)$', match)
+            if m:
+                try:
+                    # Use packaging.version for semver
+                    version = Version(m.group(1))
+                    versioned_matches.append((version, match))
+                except:
+                    continue  # skip invalid version strings
+
+        if versioned_matches:
+            # Pick the highest semantic version
+            return sorted(versioned_matches, reverse=True)[0][1]
+
+        # Fallback to non-versioned secret
+        fallback = f'/run/secrets/{prefix}'
+        return fallback if os.path.exists(fallback) else None
+
+    def read_secret(prefix, default=''):
+        path = find_versioned_secret(prefix)
+        if path and os.path.exists(path):
+            with open(path) as f:
+                return f.read().strip()
+        return default
 
     CONFIG_PATH = '/run/configs/django_config.json'
     cfg = load_json_vars(CONFIG_PATH)

@@ -151,7 +151,7 @@
         
         - name: Create DJANGO_SECRET_KEY
           community.docker.docker_secret:
-            name: DJANGO_SECRET_KEY
+            name: DJANGO_SECRET_KEY_{{ VERSION }}
             data: "{{ K8S_DJANGO_APPSECRET_YAML | b64encode }}"
             data_is_b64: true
             state: present
@@ -159,7 +159,7 @@
 
         - name: Create SQL_PASSWORD
           community.docker.docker_secret:
-            name: SQL_PASSWORD
+            name: SQL_PASSWORD_{{ VERSION }}
             data: "{{ K8S_APPSECRET_YAML | b64encode }}"
             data_is_b64: true
             state: present
@@ -171,6 +171,8 @@
             sed -i \
             -e 's|remotestorage/remoterepo:tag|{{ DOCKER_ACCOUNT }}/{{ REMOTE_REPO_NAME }}:V{{ VERSION }}|g' \
             -e 's|staging_config_confversion|staging_config_{{ VERSION }}|g' \
+            -e 's|DJANGO_SECRET_KEY_version|DJANGO_SECRET_KEY_{{ VERSION }}|g' \
+            -e 's|SQL_PASSWORD_version|SQL_PASSWORD_{{ VERSION }}|g' \
             /home/{{ SWARM_REMOTE_USER }}/{{ REMOTE_DIR }}/{{ REMOTE_FOLDER }}/stagingdocker-compose.yml
           args:
             executable: /bin/bash
