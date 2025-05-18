@@ -196,8 +196,8 @@
                     image: "{{ DOCKER_ACCOUNT }}/{{ REMOTE_REPO_NAME }}:V{{ VERSION }}"
         
         #remove unused configs and secrets
-        - name: Get all Docker configs 
-          community.docker.docker_config_info:
+        - name: Get all Docker configs #remove configs
+          ansible.builtin.command: docker config ls --format '{{.Name}}'
           register: docker_configs
 
         - name: Remove old configs automatically
@@ -222,8 +222,8 @@
               loop: "{{ removable_configs }}"
               ignore_errors: true
 
-        - name: Get all Docker secrets
-          community.docker.docker_secret_info:
+        - name: Get all Docker secrets #remove secrets
+          ansible.builtin.command: docker secret ls --format '{{.Name}}'
           register: docker_secrets
 
         - name: Remove old secrets automatically
