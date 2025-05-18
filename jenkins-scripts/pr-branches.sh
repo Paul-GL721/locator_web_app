@@ -35,7 +35,7 @@ for app in "${APPS[@]}"; do
     for folder in "${FOLDERS[@]}"; do
         full_path="$BASE_DIRECTORY/$app/$folder"
         echo "Checking out: $full_path"
-        git checkout origin/staging -- "$full_path" || echo "Warning: $full_path not found in origin/staging"
+        git checkout origin/production -- "$full_path" || echo "Warning: $full_path not found in origin/production"
     done
 done
 
