@@ -195,7 +195,11 @@
                   stagelocapp:
                     image: "{{ DOCKER_ACCOUNT }}/{{ REMOTE_REPO_NAME }}:V{{ VERSION }}"
         
-        #remove unused configs
+        #remove unused configs and secrets
+        - name: Get all Docker configs 
+          community.docker.docker_config_info:
+          register: docker_configs
+
         - name: Remove old configs automatically
           vars:
             current_version: "staging_config_{{ VERSION }}"
@@ -217,3 +221,42 @@
                 state: absent
               loop: "{{ removable_configs }}"
               ignore_errors: true
+
+        - name: Get all Docker secrets
+          community.docker.docker_secret_info:
+          register: docker_secrets
+
+        - name: Remove old secrets automatically
+          vars:
+            current_django_secret: "DJANGO_SECRET_KEY_{{ VERSION }}"
+            current_sql_secret: "SQL_PASSWORD_{{ VERSION }}"
+          block:
+            - name: Filter old DJANGO secrets
+              set_fact:
+                old_django_secrets: >-
+                  {{
+                    docker_secrets.secrets
+                    | selectattr('Spec.Name', 'search', '^DJANGO_SECRET_KEY_')
+                    | rejectattr('Spec.Name', 'equalto', current_django_secret)
+                    | map(attribute='Spec.Name')
+                    | list
+                  }}
+
+            - name: Filter old SQL secrets
+              set_fact:
+                old_sql_secrets: >-
+                  {{
+                    docker_secrets.secrets
+                    | selectattr('Spec.Name', 'search', '^SQL_PASSWORD_')
+                    | rejectattr('Spec.Name', 'equalto', current_sql_secret)
+                    | map(attribute='Spec.Name')
+                    | list
+                  }}
+
+            - name: Delete old secrets
+              community.docker.docker_secret:
+                name: "{{ item }}"
+                state: absent
+              loop: "{{ old_django_secrets + old_sql_secrets }}"
+              ignore_errors: true
+
