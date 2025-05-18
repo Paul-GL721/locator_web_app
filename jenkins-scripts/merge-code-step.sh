@@ -19,6 +19,7 @@ APPS=("locator")
 
 # Define the files to include for each app
 FILES=("admin.py" "apps.py" "forms.py" "models.py" "tests.py" "urls.py" "views.py" "serializers.py")
+FOLDERS=("static" "templates")
 
 # Checkout selected files in a loop
 for app in "${APPS[@]}"; do
@@ -28,6 +29,17 @@ for app in "${APPS[@]}"; do
             git checkout origin/development "$BASE_DIRECTORY/$app/$file"
         else
             echo "Skipping: $BASE_DIRECTORY/$app/$file (file does not exist)"
+        fi
+    done
+done
+# Checkout selected folders in a loop
+for app in "${APPS[@]}"; do
+    for folder in "${FOLDERS[@]}"; do
+        if [ -f "$BASE_DIRECTORY/$app/$folder" ]; then
+            echo "Checking out: $BASE_DIRECTORY/$app/$folder"
+            git checkout origin/development "$BASE_DIRECTORY/$app/$folder"
+        else
+            echo "Skipping: $BASE_DIRECTORY/$app/$folder (folder does not exist)"
         fi
     done
 done
