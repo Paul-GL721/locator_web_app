@@ -32,17 +32,15 @@ for app in "${APPS[@]}"; do
         fi
     done
 done
-# Checkout selected folders in a loop
+# Checkout selected folders using a loop a loop
 for app in "${APPS[@]}"; do
     for folder in "${FOLDERS[@]}"; do
-        if [ -d "$BASE_DIRECTORY/$app/$folder" ]; then
-            echo "Checking out: $BASE_DIRECTORY/$app/$folder"
-            git checkout origin/development "$BASE_DIRECTORY/$app/$folder"
-        else
-            echo "Skipping: $BASE_DIRECTORY/$app/$folder (folder does not exist)"
-        fi
+        full_path="$BASE_DIRECTORY/$app/$folder"
+        echo "Checking out: $full_path"
+        git checkout origin/development -- "$full_path" || echo "Warning: $full_path not found in origin/development"
     done
 done
+
 
 
 # Checkout additional necessary files
