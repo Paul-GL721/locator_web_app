@@ -194,10 +194,6 @@
                     image: "{{ DOCKER_ACCOUNT }}/{{ REMOTE_REPO_NAME }}:V{{ VERSION }}"
         
         #remove unused configs
-        - name: Get all Docker configs
-          community.docker.docker_config_info:
-          register: docker_configs
-
         - name: Remove old configs automatically
           vars:
             current_version: "staging_config_{{ VERSION }}"
