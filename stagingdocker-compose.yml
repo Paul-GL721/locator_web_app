@@ -13,7 +13,7 @@ services:
       - SQL_PASSWORD 
       - DJANGO_SECRET_KEY
     configs:
-      - source: staging_config
+      - source: staging_config_confversion
         target: /run/configs/django_config.json
     networks: #networks to db and reverse proxy
       - hapostgresql_ha-pgpoolbridge-network

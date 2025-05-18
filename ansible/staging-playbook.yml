@@ -144,7 +144,7 @@
 
         - name: Create staging configs (from a file on the target machine)
           community.docker.docker_config:
-            name: staging_config
+            name: staging_config_{{ VERSION }}
             data_src: "/home/{{ SWARM_REMOTE_USER }}/{{ REMOTE_DIR }}/{{ REMOTE_FOLDER }}/staging_config.json"
             state: present
             force: true
@@ -165,13 +165,16 @@
             state: present
             force: true
         
-        - name: Replace full image string in docker-compose.yml
+        - name: Replace image and config version in docker-compose.yml
           become: true
           ansible.builtin.shell: |
-            sed -i 's|remotestorage/remoterepo:tag|{{ DOCKER_ACCOUNT }}/{{ REMOTE_REPO_NAME }}:V{{ VERSION }}|g' /home/{{ SWARM_REMOTE_USER }}/{{ REMOTE_DIR }}/{{ REMOTE_FOLDER }}/stagingdocker-compose.yml
+            sed -i \
+            -e 's|remotestorage/remoterepo:tag|{{ DOCKER_ACCOUNT }}/{{ REMOTE_REPO_NAME }}:V{{ VERSION }}|g' \
+            -e 's|staging_config_confversion|staging_config_{{ VERSION }}|g' \
+            /home/{{ SWARM_REMOTE_USER }}/{{ REMOTE_DIR }}/{{ REMOTE_FOLDER }}/stagingdocker-compose.yml
           args:
             executable: /bin/bash
- 
+
         - name: Ensure jsondiff is installed on remote host
           become: true
           ansible.builtin.pip:
@@ -189,3 +192,30 @@
                 services:
                   stagelocapp:
                     image: "{{ DOCKER_ACCOUNT }}/{{ REMOTE_REPO_NAME }}:V{{ VERSION }}"
+        
+        #remove unused configs
+        - name: Get all Docker configs
+          community.docker.docker_config_info:
+          register: docker_configs
+
+        - name: Remove old configs automatically
+          vars:
+            current_version: "staging_config_{{ VERSION }}"
+          block:
+            - name: Filter out the current config
+              set_fact:
+                removable_configs: >-
+                  {{
+                    docker_configs.configs
+                    | selectattr('Spec.Name', 'search', '^staging_config_')
+                    | rejectattr('Spec.Name', 'equalto', current_version)
+                    | map(attribute='Spec.Name')
+                    | list
+                  }}
+
+            - name: Attempt to delete old configs
+              community.docker.docker_config:
+                name: "{{ item }}"
+                state: absent
+              loop: "{{ removable_configs }}"
+              ignore_errors: true
