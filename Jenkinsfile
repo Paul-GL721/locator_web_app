@@ -116,7 +116,7 @@ pipeline {
 			}
 		}
 
-		stage('4. Deploy to the staging kubernetes cluster') {
+		stage('4. Deploy to the staging Kubernetes or SWarm cluster') {
 			//Execute if its the staging branch
 			when {
 				branch 'staging'
@@ -194,11 +194,10 @@ pipeline {
 						//build the image
 						sh '''./${BASE_DIRECTORY}/jenkins-scripts/merge-code-step.sh '''
 
-						//Uncomment if they are changes made and commited to the production branch directly
-						
+						/*//Uncomment if they are changes made and commited to the production branch directly
 						sh('git stash')
 						sh('git pull')
-						sh('git push ${GIT_REPO}')
+						sh('git push ${GIT_REPO}')*/
 
 						//Find the number of staged filess
 						prod_staged_files = sh(script: 'git diff --cached --numstat | wc -l', returnStdout: true) as Integer
@@ -288,7 +287,7 @@ pipeline {
 			}
 		}
 
-		stage('10. Deploy to production EC2 instance') {
+		stage('10. Deploy to production Kubernetes of Swarm EC2 clusters') {
 			// Define environment variables
 			environment {
 				REMOTE_DIR = 'PRODUCTION_BACKEND_LOCATORAPP'
