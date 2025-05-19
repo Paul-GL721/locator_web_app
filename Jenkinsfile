@@ -195,6 +195,7 @@ pipeline {
 						sh '''./${BASE_DIRECTORY}/jenkins-scripts/merge-code-step.sh '''
 
 						//Uncomment if they are changes made and commited to the production branch directly
+						
 						sh('git stash')
 						sh('git pull')
 						sh('git push ${GIT_REPO}')
