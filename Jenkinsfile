@@ -116,7 +116,7 @@ pipeline {
 			}
 		}
 
-		stage('4. Deploy to the staging kubernetes cluster') {
+		stage('4. Deploy to the staging Kubernetes or SWarm cluster') {
 			//Execute if its the staging branch
 			when {
 				branch 'staging'
@@ -266,10 +266,6 @@ pipeline {
 		}
 
 		stage('9. Build, tag, and push to remote storage') {
-			// Define environment variables
-			environment {
-				REMOTE_REPO_NAME = 'locatorapp'
-			}
 			///Execute if its the production branch
 			when {
 				branch 'main'
@@ -291,7 +287,7 @@ pipeline {
 			}
 		}
 
-		stage('10. Deploy to production EC2 instance') {
+		stage('10. Deploy to production Kubernetes of Swarm EC2 clusters') {
 			// Define environment variables
 			environment {
 				REMOTE_DIR = 'PRODUCTION_BACKEND_LOCATORAPP'
