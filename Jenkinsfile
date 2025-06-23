@@ -33,7 +33,7 @@ pipeline {
 		SWARM_ANSIBLE_PRIVATE_KEY_PATH=credentials('swarm-locapp-ansible-privatekey')
 		K8S_APPSECRET_YAML=credentials('k8s_locatorappsecrets_stage_yaml')
 		K8S_DJANGO_APPSECRET_YAML=credentials('k8s_locatorapp-djangosecrets_stage_yaml')
-		EMAIL_TO='team@paulgobero.com'
+		EMAIL_TO='locatorappteam@paulgobero.com'
 	}
 
 	stages {
@@ -303,7 +303,6 @@ pipeline {
 			when {
 				branch 'main'
 			}
-			
 			// Using Ansible to deploy on an EC2 instance
 			agent {
 				label 'deploynode'
