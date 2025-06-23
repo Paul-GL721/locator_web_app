@@ -6,7 +6,6 @@ def prod_staged_files
 pipeline {
 	//run script on different agents
 	agent none
-
 	//reusable env variables
 	environment {
 		VERSION="0.1.${BUILD_NUMBER}"
