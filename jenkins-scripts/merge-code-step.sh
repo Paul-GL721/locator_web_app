@@ -41,8 +41,6 @@ for app in "${APPS[@]}"; do
     done
 done
 
-
-
 # Checkout additional necessary files
 git checkout origin/development $BASE_DIRECTORY/track_locator $BASE_DIRECTORY/.gitignore\
  $BASE_DIRECTORY/Jenkinsfile $BASE_DIRECTORY/manage.py $BASE_DIRECTORY/Pipfile $BASE_DIRECTORY/Pipfile.lock\
