@@ -290,7 +290,7 @@ pipeline {
 		stage('10. Deploy to production Kubernetes of Swarm EC2 clusters') {
 			// Define environment variables
 			environment {
-				REMOTE_DIR = 'PRODUCTION_BACKEND_LOCATORAPP'
+				REMOTE_DIR = 'PRODUCTION_LOCATORAPP_WEBAPP'
 				REMOTE_REPO_NAME = 'locatorapp'
 				K8S_HELM_CHART_TYPE_FOLDER = 'locatorapp'
 				K8S_RELEASE_NAME = 'locatorapp'
