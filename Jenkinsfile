@@ -13,7 +13,7 @@ pipeline {
 		REMOTE_USER='k8sdeployuser'
 		SWARM_REMOTE_USER='deployuser1'
 		REMOTE_DIR='STAGING_LOCATORAPP_WEBAPP'
-		REMOTE_FOLDER='Webapp'
+		REMOTE_FOLDER=''
 		REMOTE_REPO_NAME='staging_backend_locator'
 		DOCKER_ACCOUNT='paulgl721'
 		DEPLOY_TARGET='swarm' //this can be set to 'k8s' or 'both'
