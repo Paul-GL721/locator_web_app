@@ -40,7 +40,7 @@
 - name: Deploy to kubernetes cluster
   hosts: k8scluster
   vars:
-    k8s_files_base: /home/{{ REMOTE_USER }}/{{ REMOTE_DIR }}{% if REMOTE_FOLDER | default('') | length > 0 %}/{{ REMOTE_FOLDER }}{% endif %}/{{ K8S_DEPLOYMENT_FOLDER }}
+    k8s_files_base: /home/{{ REMOTE_USER }}/{{ REMOTE_DIR }}{% if REMOTE_FOLDER | default('') not in ['null', '', None] %}/{{ REMOTE_FOLDER }}{% endif %}/{{ K8S_DEPLOYMENT_FOLDER }}
   tasks:
     - name: Proceed only if target includes Kubernetes
       ansible.builtin.debug:
@@ -145,7 +145,7 @@
         - name: Create staging configs (from a file on the target machine)
           community.docker.docker_config:
             name: staging_config_{{ VERSION }}
-            data_src: "/home/{{ SWARM_REMOTE_USER }}/{{ REMOTE_DIR }}{% if REMOTE_FOLDER | default('') | length > 0 %}/{{ REMOTE_FOLDER }}{% endif %}/staging_config.json"
+            data_src: "/home/{{ SWARM_REMOTE_USER }}/{{ REMOTE_DIR }}{% if REMOTE_FOLDER | default('') not in ['null', '', None] %}/{{ REMOTE_FOLDER }}{% endif %}/staging_config.json"
             #data_src: "/home/{{ SWARM_REMOTE_USER }}/{{ REMOTE_DIR }}/{{ REMOTE_FOLDER }}/staging_config.json"
             state: present
             force: true
@@ -174,7 +174,7 @@
             -e 's|staging_config_confversion|staging_config_{{ VERSION }}|g' \
             -e 's|DJANGO_SECRET_KEY_version|DJANGO_SECRET_KEY_{{ VERSION }}|g' \
             -e 's|SQL_PASSWORD_version|SQL_PASSWORD_{{ VERSION }}|g' \
-            /home/{{ SWARM_REMOTE_USER }}/{{ REMOTE_DIR }}{% if REMOTE_FOLDER | default('') | length > 0 %}/{{ REMOTE_FOLDER }}{% endif %}/stagingdocker-compose.yml
+            /home/{{ SWARM_REMOTE_USER }}/{{ REMOTE_DIR }}{% if REMOTE_FOLDER | default('') not in ['null', '', None] %}/{{ REMOTE_FOLDER }}{% endif %}/stagingdocker-compose.yml
           args:
             executable: /bin/bash
 
@@ -190,7 +190,7 @@
             name: staging_locatorapp
             state: present
             compose:
-              - /home/{{ SWARM_REMOTE_USER }}/{{ REMOTE_DIR }}{% if REMOTE_FOLDER | default('') | length > 0 %}/{{ REMOTE_FOLDER }}{% endif %}/stagingdocker-compose.yml
+              - /home/{{ SWARM_REMOTE_USER }}/{{ REMOTE_DIR }}{% if REMOTE_FOLDER | default('') not in ['null', '', None] %}/{{ REMOTE_FOLDER }}{% endif %}/stagingdocker-compose.yml
               - version: '3.8'
                 services:
                   stagelocapp:
