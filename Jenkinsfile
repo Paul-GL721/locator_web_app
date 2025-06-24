@@ -13,7 +13,7 @@ pipeline {
 		REMOTE_USER='k8sdeployuser'
 		SWARM_REMOTE_USER='deployuser1'
 		REMOTE_DIR='STAGING_LOCATORAPP_WEBAPP'
-		REMOTE_FOLDER='Webapp'
+		REMOTE_FOLDER=''
 		REMOTE_REPO_NAME='staging_backend_locator'
 		DOCKER_ACCOUNT='paulgl721'
 		DEPLOY_TARGET='swarm' //this can be set to 'k8s' or 'both'
@@ -66,10 +66,10 @@ pipeline {
 				sshagent (credentials: ['locator-web-application-jenkins-to-github']) {
 					script {
 						//make the merge script executable
-						sh 'chmod +x ./${BASE_DIRECTORY}/jenkins-scripts/merge-code-step.sh'
+						sh 'chmod +x ${BASE_DIRECTORY}/jenkins-scripts/merge-code-step.sh'
 
 						//Run the merge script to merge dev code into staging
-						sh '''./${BASE_DIRECTORY}/jenkins-scripts/merge-code-step.sh '''
+						sh '''${BASE_DIRECTORY}/jenkins-scripts/merge-code-step.sh '''
 
 						/*//Uncomment if they are changes made and commited to the staging branch directly
 						sh('git stash')
@@ -108,10 +108,10 @@ pipeline {
 				echo 'Creating a taged image'
 
 				//make the build script executable
-				sh 'chmod +x ./${BASE_DIRECTORY}/jenkins-scripts/build-step.sh'
+				sh 'chmod +x ${BASE_DIRECTORY}/jenkins-scripts/build-step.sh'
 
 				//build the image
-				sh '''./${BASE_DIRECTORY}/jenkins-scripts/build-step.sh '''+VERSION+''' '''
+				sh '''${BASE_DIRECTORY}/jenkins-scripts/build-step.sh '''+VERSION+''' '''
 			}
 		}
 
@@ -129,7 +129,7 @@ pipeline {
 				script{
 					//run ansible-playbook
 					sh """
-						ansible-playbook ./${BASE_DIRECTORY}/ansible/staging-playbook.yml \
+						ansible-playbook ${BASE_DIRECTORY}/ansible/staging-playbook.yml \
 						--extra-vars="REMOTE_USER=${env.REMOTE_USER} \
 						SWARM_REMOTE_USER=${env.SWARM_REMOTE_USER} \
 						GIT_REPO=${env.GIT_REPO} \
@@ -188,10 +188,10 @@ pipeline {
 					script {
 						echo '..............Creating temporary pull request branch................'
 						//make the script executable
-						sh 'chmod +x ./${BASE_DIRECTORY}/jenkins-scripts/merge-code-step.sh'
+						sh 'chmod +x ${BASE_DIRECTORY}/jenkins-scripts/merge-code-step.sh'
 
 						//build the image
-						sh '''./${BASE_DIRECTORY}/jenkins-scripts/merge-code-step.sh '''
+						sh '''${BASE_DIRECTORY}/jenkins-scripts/merge-code-step.sh '''
 
 						/*//Uncomment if they are changes made and commited to the production branch directly
 						sh('git stash')
@@ -232,10 +232,10 @@ pipeline {
 						echo 'Creating temp branch'
 
 						//make the pr-branch executable
-						sh 'chmod +x ./${BASE_DIRECTORY}/jenkins-scripts/pr-branches.sh'
+						sh 'chmod +x ${BASE_DIRECTORY}/jenkins-scripts/pr-branches.sh'
 
 						//Merge into the temporary branch
-						sh '''./${BASE_DIRECTORY}/jenkins-scripts/pr-branches.sh '''+VERSION+''' '''
+						sh '''${BASE_DIRECTORY}/jenkins-scripts/pr-branches.sh '''+VERSION+''' '''
 					}
 				}
 			}
@@ -279,10 +279,10 @@ pipeline {
 				echo 'Creating a production taged image'
 
 				//make the build script executable
-				sh 'chmod +x ./${BASE_DIRECTORY}/jenkins-scripts/build-step.sh'
+				sh 'chmod +x ${BASE_DIRECTORY}/jenkins-scripts/build-step.sh'
 
 				//build the image
-				sh '''./${BASE_DIRECTORY}/jenkins-scripts/build-step.sh '''+VERSION+''' '''
+				sh '''${BASE_DIRECTORY}/jenkins-scripts/build-step.sh '''+VERSION+''' '''
 			}
 		}
 
@@ -312,7 +312,7 @@ pipeline {
 				script {
 					// Run production ansible-playbook
 					sh """
-						ansible-playbook ./${BASE_DIRECTORY}/ansible/production-playbook.yml \
+						ansible-playbook ${BASE_DIRECTORY}/ansible/production-playbook.yml \
 						--extra-vars="REMOTE_USER=${env.REMOTE_USER} \
 						SWARM_REMOTE_USER=${env.SWARM_REMOTE_USER} \
 						GIT_REPO=${env.GIT_REPO} \
