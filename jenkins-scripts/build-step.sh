@@ -7,7 +7,7 @@ echo "Building the docker production image"
 
 # Build, tag, and push the production image to Docker Registry
 # Build, tag, and push the staging image to docker public repository
-docker build -t ${DOCKER_ACCOUNT}/${REMOTE_REPO_NAME}:V$VERSION -f ./$BASE_DIRECTORY/Dockerfile ./$BASE_DIRECTORY
+docker build -t ${DOCKER_ACCOUNT}/${REMOTE_REPO_NAME}:V$VERSION -f $BASE_DIRECTORY/Dockerfile $BASE_DIRECTORY
 
 whoami
 echo usr=$USER
