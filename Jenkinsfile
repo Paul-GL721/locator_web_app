@@ -247,7 +247,7 @@ pipeline {
 			when {
 				branch 'production'
 			}
-			
+
 			agent {
 				label 'buildnode'
 			}
@@ -346,9 +346,9 @@ pipeline {
 					"""
 				}
 			}
-		}
-        
+		}  
 	}
+
 
 	post {
 		success {
