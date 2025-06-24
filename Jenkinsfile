@@ -247,6 +247,7 @@ pipeline {
 			when {
 				branch 'production'
 			}
+			
 			agent {
 				label 'buildnode'
 			}
@@ -266,6 +267,10 @@ pipeline {
 		}
 
 		stage('9. Build, tag, and push to remote storage') {
+			// Define environment variables
+			environment {
+				REMOTE_REPO_NAME = 'locatorapp'
+			}
 			///Execute if its the production branch
 			when {
 				branch 'main'
@@ -287,7 +292,7 @@ pipeline {
 			}
 		}
 
-		stage('10. Deploy to production Kubernetes of Swarm EC2 clusters') {
+		stage('10. Deploy to production Kubernetes or Swarm of EC2 clusters') {
 			// Define environment variables
 			environment {
 				REMOTE_DIR = 'PRODUCTION_LOCATORAPP_WEBAPP'
