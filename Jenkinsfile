@@ -8,12 +8,12 @@ pipeline {
 	agent none
 	//reusable env variables
 	environment {
-		VERSION="0.1.${BUILD_NUMBER}"
-		BASE_DIRECTORY='Backend/track_locator'
+		VERSION="1.1.${BUILD_NUMBER}"
+		BASE_DIRECTORY='.'
 		REMOTE_USER='k8sdeployuser'
 		SWARM_REMOTE_USER='deployuser1'
-		REMOTE_DIR='STAGING_BACKEND_LOCATORAPP'
-		REMOTE_FOLDER='Backend/track_locator'
+		REMOTE_DIR='STAGING_LOCATORAPP_WEBAPP'
+		REMOTE_FOLDER='Webapp'
 		REMOTE_REPO_NAME='staging_backend_locator'
 		DOCKER_ACCOUNT='paulgl721'
 		DEPLOY_TARGET='swarm' //this can be set to 'k8s' or 'both'
@@ -22,7 +22,7 @@ pipeline {
 		K8S_HELM_CHART_TYPE_FOLDER='staging-locatorapp'
 		K8S_RELEASE_NAME='locatorapp-staging'
 		K8S_NAMESPACE='locator-app-staging'
-		GIT_REPO='git@github.com:Paul-GL721/locator.git'
+		GIT_REPO='git@github.com:Paul-GL721/locator_web_app.git'
 		GH_TOKENCRED=credentials('jenkins-post-pr-portfolio')
 		ANSIBLE_HOST=credentials('locapp-ansible-host')
 		ANSIBLE_USER=credentials('locapp-ansible-user')
@@ -63,7 +63,7 @@ pipeline {
 				echo '..................Merging if anyfiles have changed................'
 				
 				//with github credentials stored in jenkins server
-				sshagent (credentials: ['locator-app-jenkins-to-github']) {
+				sshagent (credentials: ['locator-web-application-jenkins-to-github']) {
 					script {
 						//make the merge script executable
 						sh 'chmod +x ./${BASE_DIRECTORY}/jenkins-scripts/merge-code-step.sh'
@@ -184,7 +184,7 @@ pipeline {
 			}
 			steps {
 				//Use github credentials stored in jenkins server
-				sshagent (credentials: ['locator-app-jenkins-to-github']) {
+				sshagent (credentials: ['locator-web-application-jenkins-to-github']) {
 					script {
 						echo '..............Creating temporary pull request branch................'
 						//make the script executable
@@ -226,7 +226,7 @@ pipeline {
 			}
 			steps {
 				//with github credentials stored in jenkins server
-				sshagent (credentials: ['locator-app-jenkins-to-github']) {
+				sshagent (credentials: ['locator-web-application-jenkins-to-github']) {
 					script {
 						echo '..............Creating temporary pull request branch................'
 						echo 'Creating temp branch'
