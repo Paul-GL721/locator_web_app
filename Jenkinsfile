@@ -6,6 +6,7 @@ def prod_staged_files
 pipeline {
 	//run script on different agents
 	agent none
+	
 	//reusable env variables
 	environment {
 		VERSION="1.1.${BUILD_NUMBER}"
@@ -71,10 +72,10 @@ pipeline {
 						//Run the merge script to merge dev code into staging
 						sh '''${BASE_DIRECTORY}/jenkins-scripts/merge-code-step.sh '''
 
-						//Uncomment if they are changes made and commited to the staging branch directly
+						/*//Uncomment if they are changes made and commited to the staging branch directly
 						sh('git stash')
 						sh('git pull')
-						sh('git push ${GIT_REPO}')
+						sh('git push ${GIT_REPO}')*/
 
 						//Find the number of staged files 
 						staged_files = sh(script: 'git diff --cached --numstat | wc -l', returnStdout: true) as Integer
