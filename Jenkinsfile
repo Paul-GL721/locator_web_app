@@ -6,15 +6,15 @@ def prod_staged_files
 pipeline {
 	//run script on different agents
 	agent none
-
+	
 	//reusable env variables
 	environment {
-		VERSION="0.1.${BUILD_NUMBER}"
-		BASE_DIRECTORY='Backend/track_locator'
+		VERSION="1.1.${BUILD_NUMBER}"
+		BASE_DIRECTORY='.'
 		REMOTE_USER='k8sdeployuser'
 		SWARM_REMOTE_USER='deployuser1'
-		REMOTE_DIR='STAGING_BACKEND_LOCATORAPP'
-		REMOTE_FOLDER='Backend/track_locator'
+		REMOTE_DIR='STAGING_LOCATORAPP_WEBAPP'
+		REMOTE_FOLDER=''
 		REMOTE_REPO_NAME='staging_backend_locator'
 		DOCKER_ACCOUNT='paulgl721'
 		DEPLOY_TARGET='swarm' //this can be set to 'k8s' or 'both'
@@ -23,7 +23,7 @@ pipeline {
 		K8S_HELM_CHART_TYPE_FOLDER='staging-locatorapp'
 		K8S_RELEASE_NAME='locatorapp-staging'
 		K8S_NAMESPACE='locator-app-staging'
-		GIT_REPO='git@github.com:Paul-GL721/locator.git'
+		GIT_REPO='git@github.com:Paul-GL721/locator_web_app.git'
 		GH_TOKENCRED=credentials('jenkins-post-pr-portfolio')
 		ANSIBLE_HOST=credentials('locapp-ansible-host')
 		ANSIBLE_USER=credentials('locapp-ansible-user')
@@ -33,7 +33,7 @@ pipeline {
 		SWARM_ANSIBLE_PRIVATE_KEY_PATH=credentials('swarm-locapp-ansible-privatekey')
 		K8S_APPSECRET_YAML=credentials('k8s_locatorappsecrets_stage_yaml')
 		K8S_DJANGO_APPSECRET_YAML=credentials('k8s_locatorapp-djangosecrets_stage_yaml')
-		EMAIL_TO='team@paulgobero.com'
+		EMAIL_TO='locatorappteam@paulgobero.com'
 	}
 
 	stages {
@@ -64,13 +64,13 @@ pipeline {
 				echo '..................Merging if anyfiles have changed................'
 				
 				//with github credentials stored in jenkins server
-				sshagent (credentials: ['locator-app-jenkins-to-github']) {
+				sshagent (credentials: ['locator-web-application-jenkins-to-github']) {
 					script {
 						//make the merge script executable
-						sh 'chmod +x ./${BASE_DIRECTORY}/jenkins-scripts/merge-code-step.sh'
+						sh 'chmod +x ${BASE_DIRECTORY}/jenkins-scripts/merge-code-step.sh'
 
 						//Run the merge script to merge dev code into staging
-						sh '''./${BASE_DIRECTORY}/jenkins-scripts/merge-code-step.sh '''
+						sh '''${BASE_DIRECTORY}/jenkins-scripts/merge-code-step.sh '''
 
 						/*//Uncomment if they are changes made and commited to the staging branch directly
 						sh('git stash')
@@ -109,10 +109,10 @@ pipeline {
 				echo 'Creating a taged image'
 
 				//make the build script executable
-				sh 'chmod +x ./${BASE_DIRECTORY}/jenkins-scripts/build-step.sh'
+				sh 'chmod +x ${BASE_DIRECTORY}/jenkins-scripts/build-step.sh'
 
 				//build the image
-				sh '''./${BASE_DIRECTORY}/jenkins-scripts/build-step.sh '''+VERSION+''' '''
+				sh '''${BASE_DIRECTORY}/jenkins-scripts/build-step.sh '''+VERSION+''' '''
 			}
 		}
 
@@ -130,7 +130,7 @@ pipeline {
 				script{
 					//run ansible-playbook
 					sh """
-						ansible-playbook ./${BASE_DIRECTORY}/ansible/staging-playbook.yml \
+						ansible-playbook ${BASE_DIRECTORY}/ansible/staging-playbook.yml \
 						--extra-vars="REMOTE_USER=${env.REMOTE_USER} \
 						SWARM_REMOTE_USER=${env.SWARM_REMOTE_USER} \
 						GIT_REPO=${env.GIT_REPO} \
@@ -185,14 +185,14 @@ pipeline {
 			}
 			steps {
 				//Use github credentials stored in jenkins server
-				sshagent (credentials: ['locator-app-jenkins-to-github']) {
+				sshagent (credentials: ['locator-web-application-jenkins-to-github']) {
 					script {
 						echo '..............Creating temporary pull request branch................'
 						//make the script executable
-						sh 'chmod +x ./${BASE_DIRECTORY}/jenkins-scripts/merge-code-step.sh'
+						sh 'chmod +x ${BASE_DIRECTORY}/jenkins-scripts/merge-code-step.sh'
 
 						//build the image
-						sh '''./${BASE_DIRECTORY}/jenkins-scripts/merge-code-step.sh '''
+						sh '''${BASE_DIRECTORY}/jenkins-scripts/merge-code-step.sh '''
 
 						/*//Uncomment if they are changes made and commited to the production branch directly
 						sh('git stash')
@@ -227,16 +227,16 @@ pipeline {
 			}
 			steps {
 				//with github credentials stored in jenkins server
-				sshagent (credentials: ['locator-app-jenkins-to-github']) {
+				sshagent (credentials: ['locator-web-application-jenkins-to-github']) {
 					script {
 						echo '..............Creating temporary pull request branch................'
 						echo 'Creating temp branch'
 
 						//make the pr-branch executable
-						sh 'chmod +x ./${BASE_DIRECTORY}/jenkins-scripts/pr-branches.sh'
+						sh 'chmod +x ${BASE_DIRECTORY}/jenkins-scripts/pr-branches.sh'
 
 						//Merge into the temporary branch
-						sh '''./${BASE_DIRECTORY}/jenkins-scripts/pr-branches.sh '''+VERSION+''' '''
+						sh '''${BASE_DIRECTORY}/jenkins-scripts/pr-branches.sh '''+VERSION+''' '''
 					}
 				}
 			}
@@ -280,17 +280,17 @@ pipeline {
 				echo 'Creating a production taged image'
 
 				//make the build script executable
-				sh 'chmod +x ./${BASE_DIRECTORY}/jenkins-scripts/build-step.sh'
+				sh 'chmod +x ${BASE_DIRECTORY}/jenkins-scripts/build-step.sh'
 
 				//build the image
-				sh '''./${BASE_DIRECTORY}/jenkins-scripts/build-step.sh '''+VERSION+''' '''
+				sh '''${BASE_DIRECTORY}/jenkins-scripts/build-step.sh '''+VERSION+''' '''
 			}
 		}
 
 		stage('10. Deploy to production Kubernetes of Swarm EC2 clusters') {
 			// Define environment variables
 			environment {
-				REMOTE_DIR = 'PRODUCTION_BACKEND_LOCATORAPP'
+				REMOTE_DIR = 'PRODUCTION_LOCATORAPP_WEBAPP'
 				REMOTE_REPO_NAME = 'locatorapp'
 				K8S_HELM_CHART_TYPE_FOLDER = 'locatorapp'
 				K8S_RELEASE_NAME = 'locatorapp'
@@ -303,7 +303,6 @@ pipeline {
 			when {
 				branch 'main'
 			}
-			
 			// Using Ansible to deploy on an EC2 instance
 			agent {
 				label 'deploynode'
@@ -314,7 +313,7 @@ pipeline {
 				script {
 					// Run production ansible-playbook
 					sh """
-						ansible-playbook ./${BASE_DIRECTORY}/ansible/production-playbook.yml \
+						ansible-playbook ${BASE_DIRECTORY}/ansible/production-playbook.yml \
 						--extra-vars="REMOTE_USER=${env.REMOTE_USER} \
 						SWARM_REMOTE_USER=${env.SWARM_REMOTE_USER} \
 						GIT_REPO=${env.GIT_REPO} \
