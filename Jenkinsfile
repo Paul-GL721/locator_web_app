@@ -72,10 +72,10 @@ pipeline {
 						//Run the merge script to merge dev code into staging
 						sh '''${BASE_DIRECTORY}/jenkins-scripts/merge-code-step.sh '''
 
-						//Uncomment if they are changes made and commited to the staging branch directly
+						/*//Uncomment if they are changes made and commited to the staging branch directly
 						sh('git stash')
 						sh('git pull')
-						sh('git push ${GIT_REPO}')
+						sh('git push ${GIT_REPO}')*/
 
 						//Find the number of staged files 
 						staged_files = sh(script: 'git diff --cached --numstat | wc -l', returnStdout: true) as Integer
@@ -194,10 +194,10 @@ pipeline {
 						//build the image
 						sh '''${BASE_DIRECTORY}/jenkins-scripts/merge-code-step.sh '''
 
-						//Uncomment if they are changes made and commited to the production branch directly
+						/*//Uncomment if they are changes made and commited to the production branch directly
 						sh('git stash')
 						sh('git pull')
-						sh('git push ${GIT_REPO}')
+						sh('git push ${GIT_REPO}')*/
 
 						//Find the number of staged filess
 						prod_staged_files = sh(script: 'git diff --cached --numstat | wc -l', returnStdout: true) as Integer
@@ -247,6 +247,7 @@ pipeline {
 			when {
 				branch 'production'
 			}
+			
 			agent {
 				label 'buildnode'
 			}
