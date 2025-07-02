@@ -108,7 +108,7 @@ elif os.getenv('RUNNING_IN_DOCKER_STACK') == 'true':
 else:
     # if in development, Load environment variables from the local .env file
     env_file_path = Path(__file__).resolve().parent.parent / '.env'
-    env.read_env(env_file_path)
+    env.read_env(env_file_path, overwrite=True)
 
     DEBUG = env('DEBUG', default='False')
     ALLOWED_HOSTS = env('DJANGO_ALLOWED_HOSTS', default=['127.0.0.1'])
@@ -122,7 +122,8 @@ else:
     SQL_PORT = env('SQL_PORT', default='5432')
     APP_DOMAIN = env('APP_DOMAIN', default='http://localhost:8000')
 
-    print(f"trusted origin are {CSRF_TRUSTED_ORIGINS}")
+    print(f"Allowed hosts are {ALLOWED_HOSTS}")
+    print(f"the env file path is {env_file_path}")
 
 
 # Application definition
