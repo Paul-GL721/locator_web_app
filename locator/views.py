@@ -474,10 +474,27 @@ class CustomAuthToken(ObtainAuthToken):
             data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
+        # return all the groups a user belongs to
+        groups = LocAppGrpStatus.objects.filter(locuser_Fkeyid=user) \
+            .select_related('LocAppGrp_Fkeyid') \
+            .order_by('-grpstatus_id')
+        groupdata = [
+            {
+                'groupname': status.LocAppGrp_Fkeyid.LocAppGrp_name,
+                'groupcode': status.LocAppGrp_Fkeyid.LocAppGrp_code,
+                'useradmin': status.useradmin
+            }
+            for status in groups
+        ]
         token, created = Token.objects.get_or_create(user=user)
         user_id = user.locuser_id
-        username = user.telephone_Number
-        return Response({'token': token.key, 'user_id': user_id, 'username': username})
+        username = user.username
+        return Response({
+            'token': token.key,
+            'userid': user_id,
+            'username': username,
+            'groups': groupdata
+        })
 
 
 class OpenAppRedirectView(View):
