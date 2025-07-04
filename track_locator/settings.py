@@ -253,3 +253,8 @@ CORS_ALLOW_HEADERS = ['X-Cordova-App', 'content-type']
 #     "http://localhost:8000",
 #     "file://",  # Cordova file origin
 # ]
+
+# Automatically log out user after 10minutes of inactivity
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+SESSION_SAVE_EVERY_REQUEST = True
+SESSION_COOKIE_AGE = 600
