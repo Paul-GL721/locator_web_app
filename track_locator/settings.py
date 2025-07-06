@@ -17,6 +17,7 @@ import json
 import glob
 import re
 from packaging.version import Version
+from corsheaders.defaults import default_headers
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -247,7 +248,11 @@ LOGIN_REDIRECT_URL = 'after_login'
 # CORS_ALLOWED_ORIGINS = []
 CORS_ALLOW_ALL_ORIGINS = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-CORS_ALLOW_HEADERS = ['X-Cordova-App', 'content-type']
+# CORS_ALLOW_HEADERS = ['X-Cordova-App', 'content-type']
+CORS_ALLOW_HEADERS = list(default_headers) + [
+    'Authorization',
+    'X-Cordova-App',
+]
 
 # CORS_ALLOWED_ORIGINS = [
 #     "http://localhost:8000",
