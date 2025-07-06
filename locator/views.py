@@ -8,6 +8,8 @@ from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
+from rest_framework.authentication import TokenAuthentication
 from django.http import JsonResponse
 from django.db.models import F, Max, Value
 from django.db.models.functions import Concat
@@ -383,12 +385,21 @@ class GenerateQRCodeView(UserDetailsMixin, View):
         return JsonResponse({'html': rendered_html}, status=200)
 
 
-class GenerateMobileQRCode(View):
+class GenerateMobileQRCode(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
     def post(self, request, *args, **kwargs):
-        usergroupcode = request.POST.get("usergrp")
+        usergroupcode = request.data.get("usergrp")  # Use DRF's request.data
+        if not usergroupcode:
+            return Response({'error': 'Missing user group code.'}, status=status.HTTP_400_BAD_REQUEST)
+
         qr_url, qr_image_data = generate_qr_image_data(
             usergroupcode, settings.APP_DOMAIN)
-        return JsonResponse({'qr_url': qr_url, 'qr_image_data': qr_image_data})
+        return Response({
+            'qr_url': qr_url,
+            'qr_image_data': qr_image_data
+        }, status=status.HTTP_200_OK)
 
 
 class mobile_add_newgpsdata(APIView):
