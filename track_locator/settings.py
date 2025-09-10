@@ -17,6 +17,7 @@ import json
 import glob
 import re
 from packaging.version import Version
+from corsheaders.defaults import default_headers
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -108,7 +109,7 @@ elif os.getenv('RUNNING_IN_DOCKER_STACK') == 'true':
 else:
     # if in development, Load environment variables from the local .env file
     env_file_path = Path(__file__).resolve().parent.parent / '.env'
-    env.read_env(env_file_path)
+    env.read_env(env_file_path, overwrite=True)
 
     DEBUG = env('DEBUG', default='False')
     ALLOWED_HOSTS = env('DJANGO_ALLOWED_HOSTS', default=['127.0.0.1'])
@@ -122,7 +123,8 @@ else:
     SQL_PORT = env('SQL_PORT', default='5432')
     APP_DOMAIN = env('APP_DOMAIN', default='http://localhost:8000')
 
-    print(f"trusted origin are {CSRF_TRUSTED_ORIGINS}")
+    print(f"Allowed hosts are {ALLOWED_HOSTS}")
+    print(f"the env file path is {env_file_path}")
 
 
 # Application definition
@@ -246,9 +248,18 @@ LOGIN_REDIRECT_URL = 'after_login'
 # CORS_ALLOWED_ORIGINS = []
 CORS_ALLOW_ALL_ORIGINS = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-CORS_ALLOW_HEADERS = ['X-Cordova-App', 'content-type']
+# CORS_ALLOW_HEADERS = ['X-Cordova-App', 'content-type']
+CORS_ALLOW_HEADERS = list(default_headers) + [
+    'Authorization',
+    'X-Cordova-App',
+]
 
 # CORS_ALLOWED_ORIGINS = [
 #     "http://localhost:8000",
 #     "file://",  # Cordova file origin
 # ]
+
+# Automatically log out user after 10minutes of inactivity
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+SESSION_SAVE_EVERY_REQUEST = True
+SESSION_COOKIE_AGE = 600

@@ -27,8 +27,8 @@ urlpatterns = [
          name='add_newgpsdata'),
     path("mobile/createuserprofile/", CreateUserProfile.as_view(),
          name="create_user_profile"),
-
-
-    # mobile authentication
-    # path('api-token-auth/', CustomAuthToken.as_view(), name='api_token_auth'),
+    path('mobile/api-token-auth/', CustomAuthToken.as_view(),
+         name='api_token_auth'),  # mobile authentication
+    path('mobile/generate_mobile_QRcode/', GenerateMobileQRCode.as_view(),
+         name='generate_mobile_QRcode'),  # Get mobile QR token
 ]
