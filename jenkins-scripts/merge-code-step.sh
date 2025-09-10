@@ -18,7 +18,7 @@ git checkout -f staging
 APPS=("locator")
 
 # Define the files to include for each app
-FILES=("admin.py" "apps.py" "forms.py" "models.py" "tests.py" "urls.py" "views.py" "serializers.py")
+FILES=("admin.py" "apps.py" "forms.py" "models.py" "tests.py" "urls.py" "views.py" "utils.py" "serializers.py")
 FOLDERS=("static" "templates")
 
 # Checkout selected files in a loop
