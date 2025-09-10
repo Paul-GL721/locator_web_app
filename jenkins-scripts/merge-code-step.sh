@@ -24,11 +24,11 @@ FOLDERS=("static" "templates")
 # Checkout selected files in a loop
 for app in "${APPS[@]}"; do
     for file in "${FILES[@]}"; do
-        if [ -f "$BASE_DIRECTORY/$app/$file" ]; then
-            echo "Checking out: $BASE_DIRECTORY/$app/$file"
-            git checkout origin/development "$BASE_DIRECTORY/$app/$file"
+        if git ls-tree -r origin/development --name-only | grep -q "$app/$file"; then
+            echo "Checking out (new or existing): $BASE_DIRECTORY/$app/$file"
+            git checkout origin/development -- "$BASE_DIRECTORY/$app/$file"
         else
-            echo "Skipping: $BASE_DIRECTORY/$app/$file (file does not exist)"
+            echo "Skipping: $BASE_DIRECTORY/$app/$file (not in origin/development)"
         fi
     done
 done
