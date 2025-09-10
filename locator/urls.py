@@ -29,4 +29,6 @@ urlpatterns = [
          name="create_user_profile"),
     path('mobile/api-token-auth/', CustomAuthToken.as_view(),
          name='api_token_auth'),  # mobile authentication
+    path('mobile/generate_mobile_QRcode/', GenerateMobileQRCode.as_view(),
+         name='generate_mobile_QRcode'),  # Get mobile QR token
 ]

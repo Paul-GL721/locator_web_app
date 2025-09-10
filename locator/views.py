@@ -8,6 +8,8 @@ from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
+from rest_framework.authentication import TokenAuthentication
 from django.http import JsonResponse
 from django.db.models import F, Max, Value
 from django.db.models.functions import Concat
@@ -33,6 +35,7 @@ from django.core.exceptions import PermissionDenied
 from django.template.loader import render_to_string
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
+from utils import convert_timestamp_to_fields, generate_qr_image_data
 
 
 class UserDetailsMixin:
@@ -374,45 +377,29 @@ class GenerateQRCodeView(UserDetailsMixin, View):
 
     def post(self, request, *args, **kwargs):
         usergroupcode = request.POST.get("usergrp")
-        timestamp = int(time.time())
-        print(f"group code is {usergroupcode}")
-        # Prepare placeholder query parameters
-        query_params = urlencode({
-            'usergroup': usergroupcode,
-            'qr_timestamp': timestamp,
-        })
-
-        qr_url = f"{settings.APP_DOMAIN}/locator/generatepositonqr/?{query_params}"
-
-        # Generate QR code
-        qr = qrcode.make(qr_url)
-        buffer = io.BytesIO()
-        qr.save(buffer, format="PNG")
-        img_base64 = base64.b64encode(buffer.getvalue()).decode()
-        qr_image_data = f"data:image/png;base64,{img_base64}"
+        qr_url, qr_image_data = generate_qr_image_data(
+            usergroupcode, settings.APP_DOMAIN)
 
         rendered_html = render(request, 'gps_qrcode_partial.html', {
-                               'qr_image_data': qr_image_data, }).content.decode('utf-8')
+                               'qr_image_data': qr_image_data, 'qr_url': qr_url, }).content.decode('utf-8')
         return JsonResponse({'html': rendered_html}, status=200)
 
 
-def convert_timestamp_to_fields(timestamp_ms, created_at=None):
-    # covert timestamp to seconds from millseconds
-    dt = datetime.datetime.fromtimestamp(timestamp_ms / 1000.0)
-    # Extract date and time
-    date_part = dt.date()
-    time_part = dt.time()
+class GenerateMobileQRCode(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
 
-    # remove the z from created at
-    if created_at:
-        try:
-            offline_captured = datetime.datetime.fromisoformat(
-                created_at.replace("z", "+00.00"))
-        except Exception:
-            offline_captured = dt
-    else:
-        offline_captured = dt
-    return date_part, time_part, offline_captured
+    def post(self, request, *args, **kwargs):
+        usergroupcode = request.data.get("usergrp")  # Use DRF's request.data
+        if not usergroupcode:
+            return Response({'error': 'Missing user group code.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        qr_url, qr_image_data = generate_qr_image_data(
+            usergroupcode, settings.APP_DOMAIN)
+        return Response({
+            'qr_url': qr_url,
+            'qr_image_data': qr_image_data
+        }, status=status.HTTP_200_OK)
 
 
 class mobile_add_newgpsdata(APIView):
