@@ -16,17 +16,17 @@ git checkout -f production
 APPS=("locator")
 
 # Define the files to include for each app
-FILES=("admin.py" "apps.py" "forms.py" "models.py" "tests.py" "urls.py" "views.py" "serializers.py")
+FILES=("admin.py" "apps.py" "forms.py" "models.py" "tests.py" "urls.py" "views.py" "utils.py" "serializers.py")
 FOLDERS=("static" "templates")
 
 # Checkout selected files in a loop
 for app in "${APPS[@]}"; do
     for file in "${FILES[@]}"; do
-        if [ -f "$BASE_DIRECTORY/$app/$file" ]; then
-            echo "Checking out: $BASE_DIRECTORY/$app/$file"
-            git checkout origin/staging "$BASE_DIRECTORY/$app/$file"
+        if git ls-tree -r origin/staging --name-only | grep -q "$app/$file"; then
+            echo "Checking out (new or existing): $BASE_DIRECTORY/$app/$file"
+            git checkout origin/staging -- "$BASE_DIRECTORY/$app/$file"
         else
-            echo "Skipping: $BASE_DIRECTORY/$app/$file (file does not exist)"
+            echo "Skipping: $BASE_DIRECTORY/$app/$file (not in origin/staging)"
         fi
     done
 done
