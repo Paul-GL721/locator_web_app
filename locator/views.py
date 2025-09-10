@@ -35,7 +35,7 @@ from django.core.exceptions import PermissionDenied
 from django.template.loader import render_to_string
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
-from utils import convert_timestamp_to_fields, generate_qr_image_data
+from .utils import convert_timestamp_to_fields, generate_qr_image_data
 
 
 class UserDetailsMixin:
