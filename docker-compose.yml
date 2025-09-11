@@ -21,7 +21,7 @@ services:
       replicas: 2
       placement:
         constraints: 
-          - node.role==manager
+          - node.role==worker
       labels: #generate configurations for the reverse proxy
         - "traefik.enable=true" # Enable the service
         - "traefik.http.routers.locapp.rule=Host(`locatorapp.paulgobero.com`)"
