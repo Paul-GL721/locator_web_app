@@ -100,6 +100,15 @@ if ! git merge --no-ff --no-commit $REMOTE/$SOURCE_BRANCH; then
     done
 fi
 
+echo "Ensuring new migrations from $SOURCE_BRANCH are included..."
+
+# Find migrations that exist in source but not in target
+git diff --name-only $REMOTE/$TARGET_BRANCH..$REMOTE/$SOURCE_BRANCH -- '**/migrations/*.py' | while read file; do
+    echo "Bringing migration: $file"
+    git checkout $REMOTE/$SOURCE_BRANCH -- "$file"
+    git add "$file"
+done
+
 
 # After removing excluded files, we stage the changes. 
 # Jenkins will commit these staged changes after running tests and build steps.
