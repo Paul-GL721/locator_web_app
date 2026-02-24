@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 #### CHECK VERSIONS OF DOCKER AND COMPOSE ###
 docker-compose --version
