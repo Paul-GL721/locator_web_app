@@ -2,6 +2,22 @@
 //define variables
 def staged_files
 def prod_staged_files
+//application paths to check for changes
+def APPS = [
+	"locator"
+]
+// Shared / non-app paths
+def SHARED_PATHS = [
+	"track_locator",
+    ".gitignore",
+    "Jenkinsfile",
+    "manage.py",
+    "Pipfile",
+    "Pipfile.lock",
+    "README.md",
+    "templates",
+    "static",
+]
 
 pipeline {
 	//run script on different agents
@@ -9,7 +25,7 @@ pipeline {
 	
 	//reusable env variables
 	environment {
-		VERSION="1.1.${BUILD_NUMBER}"
+		VERSION="1.2.${BUILD_NUMBER}"
 		BASE_DIRECTORY='.'
 		REMOTE_USER='k8sdeployuser'
 		SWARM_REMOTE_USER='deployuser1'
@@ -68,24 +84,87 @@ pipeline {
 				sshagent (credentials: ['locator-web-application-jenkins-to-github']) {
 					script {
 						//make the merge script executable
-						sh 'chmod +x ${BASE_DIRECTORY}/jenkins-scripts/merge-code-step.sh'
+						sh 'chmod +x ${BASE_DIRECTORY}/jenkins-scripts/merge-branches.sh'
 
 						//Run the merge script to merge dev code into staging
-						sh '''${BASE_DIRECTORY}/jenkins-scripts/merge-code-step.sh '''
+						sh '''${BASE_DIRECTORY}/jenkins-scripts/merge-branches.sh development staging false '''+VERSION+''' '''
 
 						/*//Uncomment if they are changes made and commited to the staging branch directly
 						sh('git stash')
 						sh('git pull')
 						sh('git push ${GIT_REPO}')*/
 
+						// Check for unresolved conflicts
+						def dev_stage_conflicts = sh(script: "git ls-files -u | wc -l", returnStdout: true).trim().toInteger()
+						if (dev_stage_conflicts > 0) {
+							error "Merge conflicts still exist after auto-resolve. Manual intervention required."
+						}
+
 						//Find the number of staged files 
 						staged_files = sh(script: 'git diff --cached --numstat | wc -l', returnStdout: true) as Integer
 
+						//Only generate commit messages for staged files, not all the files that were changed during the merge
+						def stagedFilesList = sh(
+							script: "git diff --cached --name-only",
+							returnStdout: true
+						).trim().split("\n")
+
+						
+						//group the commits by app and display the commit messages for each app that has changes
+						def groupedCommits = []
+
+						APPS.each { app ->
+							def appFiles = stagedFilesList.findAll { it.startsWith("${BASE_DIRECTORY}/${app}/") }
+							if (appFiles) {
+								def msgs = sh(
+									script: "git log -1 --pretty=format:'- %s (%h)' staging..origin/development -- ${appFiles.join(' ')}",
+									returnStdout: true
+								).trim()
+								if (msgs) {
+									groupedCommits << "${app}:\n${msgs}"
+								}
+							}
+						}
+
+						def sharedCommits = []
+						SHARED_PATHS.each { path ->
+							def sharedFiles = stagedFilesList.findAll { it.startsWith(path) || it == path }
+							if (sharedFiles) {
+								def msgs = sh(
+									script: "git log -1 --pretty=format:'- %s (%h)' staging..origin/development -- ${sharedFiles.join(' ')}",
+									returnStdout: true
+								).trim()
+								if (msgs) {
+									sharedCommits << "${path}:\n${msgs}"
+								}
+							}
+						}
+
+						def commitMessage = 
+							"""
+								ci(staging): merge development into staging
+
+								Build: v${VERSION}
+								Files changed: ${staged_files}
+								Jenkins build: ${env.JOB_NAME} #${env.BUILD_NUMBER}
+							"""
+
+							if (groupedCommits) {
+								commitMessage += "\n\nIncluded commits:\n${groupedCommits.join('\n\n')}"
+							}
+
+							if (sharedCommits) {
+								commitMessage += "\n\nshared / platform:\n${sharedCommits.join('\n\n')}"
+							}
+
+
 						//if staged_files are more than zero, commit the files and push to remote repo
 						if(staged_files > 0) {
-							echo "They are ${staged_files} staged files"
-							sh('git commit -m "Merged from development branch: Build version ${VERSION} " ')
-							sh('git push ${GIT_REPO}')
+							echo "Committing ${staged_files} files to staging"
+							sh """
+								git commit -m "${commitMessage.replace('"', '\\"')}"
+								git push ${GIT_REPO}
+							"""
 						}
 						else {
 							echo "There no commits to make"
@@ -190,24 +269,86 @@ pipeline {
 					script {
 						echo '..............Creating temporary pull request branch................'
 						//make the script executable
-						sh 'chmod +x ${BASE_DIRECTORY}/jenkins-scripts/merge-code-step.sh'
+						sh 'chmod +x ${BASE_DIRECTORY}/jenkins-scripts/merge-branches.sh'
 
 						//build the image
-						sh '''${BASE_DIRECTORY}/jenkins-scripts/merge-code-step.sh '''
+						sh '''${BASE_DIRECTORY}/jenkins-scripts/merge-branches.sh staging production false '''+VERSION+''' '''
 
 						/*//Uncomment if they are changes made and commited to the production branch directly
 						sh('git stash')
 						sh('git pull')
 						sh('git push ${GIT_REPO}')*/
 
+						// Check for unresolved conflicts
+						def stage_prod_conflicts = sh(script: "git ls-files -u | wc -l", returnStdout: true).trim().toInteger()
+						if (stage_prod_conflicts > 0) {
+							error "Merge conflicts still exist after auto-resolve. Manual intervention required."
+						}
+
 						//Find the number of staged filess
 						prod_staged_files = sh(script: 'git diff --cached --numstat | wc -l', returnStdout: true) as Integer
 
+						//Only generate commit messages for staged files, not all the files that were changed during the merge
+						def stagedFilesList = sh(
+							script: "git diff --cached --name-only",
+							returnStdout: true
+						).trim().split("\n")
+
+						
+						//group the commits by app and display the commit messages for each app that has changes
+						def groupedCommits = []
+
+						APPS.each { app ->
+							def appFiles = stagedFilesList.findAll { it.startsWith("${BASE_DIRECTORY}/${app}/") }
+							if (appFiles) {
+								def msgs = sh(
+									script: "git log -1 --pretty=format:'- %s (%h)' production..origin/staging -- ${appFiles.join(' ')}",
+									returnStdout: true
+								).trim()
+								if (msgs) {
+									groupedCommits << "${app}:\n${msgs}"
+								}
+							}
+						}
+
+						def sharedCommits = []
+						SHARED_PATHS.each { path ->
+							def sharedFiles = stagedFilesList.findAll { it.startsWith(path) || it == path }
+							if (sharedFiles) {
+								def msgs = sh(
+									script: "git log -1 --pretty=format:'- %s (%h)' production..origin/staging -- ${sharedFiles.join(' ')}",
+									returnStdout: true
+								).trim()
+								if (msgs) {
+									sharedCommits << "${path}:\n${msgs}"
+								}
+							}
+						}
+
+						def commitMessage = 
+							"""
+								ci(production): merge staging into prduction
+
+								Build: v${VERSION}
+								Files changed: ${prod_staged_files}
+								Jenkins build: ${env.JOB_NAME} #${env.BUILD_NUMBER}
+							"""
+
+							if (groupedCommits) {
+								commitMessage += "\n\nIncluded commits:\n${groupedCommits.join('\n\n')}"
+							}
+
+							if (sharedCommits) {
+								commitMessage += "\n\nshared / platform:\n${sharedCommits.join('\n\n')}"
+							}
+
 						//if they are (prod_staged_files) more than zero, commit the files and push to remote repo
 						if(prod_staged_files > 0) {
-							echo "They are ${prod_staged_files} staged files from staging branch"
-							sh('git commit -m "Merged from staging branch: Build version ${VERSION} " ')
-							sh('git push ${GIT_REPO}')
+							echo "Committing ${prod_staged_files} files to production"
+							sh """
+								git commit -m "${commitMessage.replace('"', '\\"')}"
+								git push ${GIT_REPO}
+							"""
 						}
 						else {
 							echo "There no commits to make"
@@ -234,10 +375,84 @@ pipeline {
 						echo 'Creating temp branch'
 
 						//make the pr-branch executable
-						sh 'chmod +x ${BASE_DIRECTORY}/jenkins-scripts/pr-branches.sh'
+						sh 'chmod +x ./${BASE_DIRECTORY}/jenkins-scripts/merge-branches.sh'
 
 						//Merge into the temporary branch
-						sh '''${BASE_DIRECTORY}/jenkins-scripts/pr-branches.sh '''+VERSION+''' '''
+						sh '''./${BASE_DIRECTORY}/jenkins-scripts/merge-branches.sh production tmpproductionV$VERSION true '''+VERSION+''' '''
+
+						// Count staged files
+						def staged_files_count = sh(script: 'git diff --cached --numstat | wc -l', returnStdout: true) as Integer
+
+						// push temp branch
+						sh "git push -u origin tmpproductionV${VERSION} || true"
+
+						//Only generate commit messages for staged files, not all the files that were changed during the merge
+						def stagedFilesList = sh(
+							script: "git diff --cached --name-only",
+							returnStdout: true
+						).trim().split("\n")
+
+						
+						//group the commits by app and display the commit messages for each app that has changes
+						def groupedCommits = []
+
+						APPS.each { app ->
+							def appFiles = stagedFilesList.findAll { it.startsWith("${BASE_DIRECTORY}/${app}/") }
+							if (appFiles) {
+								def msgs = sh(
+									script: "git log -1 --pretty=format:'- %s (%h)' tmpproductionV$VERSION..origin/production -- ${appFiles.join(' ')}",
+									returnStdout: true
+								).trim()
+								if (msgs) {
+									groupedCommits << "${app}:\n${msgs}"
+								}
+							}
+						}
+
+						def sharedCommits = []
+						SHARED_PATHS.each { path ->
+							def sharedFiles = stagedFilesList.findAll { it.startsWith(path) || it == path }
+							if (sharedFiles) {
+								def msgs = sh(
+									script: "git log -1 --pretty=format:'- %s (%h)' tmpproductionV$VERSION..origin/production -- ${sharedFiles.join(' ')}",
+									returnStdout: true
+								).trim()
+								if (msgs) {
+									sharedCommits << "${path}:\n${msgs}"
+								}
+							}
+						}
+
+						def commitMessage = 
+							"""
+								ci(production): merge production into main branch
+
+								Build: v${VERSION}
+								Files changed: ${staged_files_count}
+								Jenkins build: ${env.JOB_NAME} #${env.BUILD_NUMBER}
+							"""
+
+							if (groupedCommits) {
+								commitMessage += "\n\nIncluded commits:\n${groupedCommits.join('\n\n')}"
+							}
+
+							if (sharedCommits) {
+								commitMessage += "\n\nshared / platform:\n${sharedCommits.join('\n\n')}"
+							}
+
+						if (staged_files_count > 0) {
+							echo "Committing ${staged_files_count} files to production"
+							sh """
+								git commit -m "${commitMessage.replace('"', '\\"')}"
+								git push -u origin tmpproductionV${VERSION}
+							"""
+						} else {
+							echo "No changes to commit."
+						}
+
+						//For debugging
+						sh "git status"
+
 					}
 				}
 			}
