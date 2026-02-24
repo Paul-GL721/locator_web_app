@@ -77,7 +77,7 @@ fi
 
 
 
-######### MERGE  WITHOUT COMMITTING (Jenkins will commit after tests/build) #########
+######### MERGE  WITHOUT COMMITTING (Jenkins will commit after tests/build)   #########
 # Take all commits in SOURCE_BRANCH that are not in TARGET_BRANCH and bring them over, 
 # but do not commit yet (Jenkins will commit after running tests and build steps). 
 # This allows us to run the full CI pipeline on the merged code before finalizing the merge with a commit.
