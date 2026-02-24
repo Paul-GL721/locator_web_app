@@ -27,6 +27,7 @@ RUN pipenv install --system --deploy
 ADD ./ /code/workdir/
 
 # Copy entrypoint script and make it executable
-COPY --chmod=755 entrypoint.sh /entrypoint.sh
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]
